@@ -98,17 +98,13 @@ export default function FullscreenAIModal({
           transition={{ duration: 0.3 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 lg:p-10 bg-black/60 backdrop-blur-3xl overflow-hidden"
         >
-          {/* Ambient Glass Reflections & Aurora orbs */}
-          <div className="absolute top-10 left-1/4 w-[600px] h-[600px] bg-[var(--accent-glow)] rounded-full blur-[160px] pointer-events-none opacity-40 animate-pulse" />
-          <div className="absolute bottom-10 right-1/4 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none opacity-30" />
-
-          {/* Glass Mirror Viewport Card */}
+          {/* Clean AI workspace */}
           <motion.div
             initial={{ scale: 0.96, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.96, y: 20, opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="w-full max-w-5xl h-full max-h-[92vh] royal-glass-mirror rounded-3xl flex flex-col shadow-[0_0_90px_rgba(0,0,0,0.9)] relative overflow-hidden"
+            className="w-full max-w-5xl h-full max-h-[92vh] card-clean rounded-2xl flex flex-col relative overflow-hidden"
           >
             {/* Top Mirror Header Bar */}
             <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-black/30 backdrop-blur-xl">

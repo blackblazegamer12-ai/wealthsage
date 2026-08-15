@@ -31,14 +31,14 @@ export default function ToastContainer({ toasts, onDismiss }: ToastContainerProp
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className={`pointer-events-auto p-4 rounded-2xl border backdrop-blur-2xl shadow-2xl flex items-start gap-3 relative overflow-hidden ${
+              className={`pointer-events-auto p-4 rounded-2xl border bg-[var(--bg-surface)] shadow-lg flex items-start gap-3 relative overflow-hidden ${
                 isAI
-                  ? "bg-[#161824]/95 border-[#8B5CF6]/40 shadow-[0_0_30px_rgba(139,92,246,0.2)]"
-                  : isSuccess
-                  ? "bg-[#161824]/95 border-[#10B981]/40 shadow-[0_0_30px_rgba(16,185,129,0.15)]"
-                  : isWarning
-                  ? "bg-[#161824]/95 border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.15)]"
-                  : "bg-[#161824]/95 border-white/15"
+                  ? "border-[#8B5CF6]/40"
+                : isSuccess
+                  ? "border-[#10B981]/40"
+                : isWarning
+                  ? "border-amber-500/40"
+                  : "border-[var(--border-subtle)]"
               }`}
             >
               {/* Subtle side glow bar */}
@@ -75,7 +75,7 @@ export default function ToastContainer({ toasts, onDismiss }: ToastContainerProp
               </div>
 
               <div className="flex-1 min-w-0 pr-4">
-                <p className="text-sm font-semibold text-white tracking-tight">{toast.title}</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)] tracking-tight">{toast.title}</p>
                 {toast.description && (
                   <p className="text-xs text-slate-400 mt-0.5 leading-snug">{toast.description}</p>
                 )}

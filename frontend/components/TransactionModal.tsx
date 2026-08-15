@@ -46,7 +46,7 @@ export default function TransactionModal({
             exit={{ scale: 0.95, y: 16 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="royal-glass-mirror p-6 sm:p-8 rounded-3xl w-full max-w-md shadow-2xl relative border border-[var(--border-royal)]"
+            className="card-clean p-6 sm:p-8 rounded-2xl w-full max-w-md relative"
           >
             <button
               type="button"
@@ -72,6 +72,7 @@ export default function TransactionModal({
                 <input
                   type="text"
                   required
+                  maxLength={160}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none transition-all text-sm"
@@ -85,7 +86,9 @@ export default function TransactionModal({
                   type="number"
                   required
                   min="0.01"
+                  max="999999999"
                   step="0.01"
+                  pattern="^\\d+(\\.\\d{1,2})?$"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none transition-all text-sm"
@@ -108,7 +111,8 @@ export default function TransactionModal({
                 <div>
                   <label className="text-xs text-slate-400 mb-1.5 block font-medium">Category</label>
                   <input
-                    type="text"
+                  type="text"
+                  maxLength={80}
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none transition-all text-sm"

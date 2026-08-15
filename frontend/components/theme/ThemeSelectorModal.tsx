@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Crown, Check, Sparkles } from "lucide-react";
-import { useRoyalTheme, RoyalThemeId, ROYAL_THEMES } from "./ThemeContext";
+import { X, Crown, Check } from "lucide-react";
+import { useRoyalTheme, ROYAL_THEMES } from "./ThemeContext";
 
 interface ThemeSelectorModalProps {
   isOpen: boolean;
@@ -11,6 +11,8 @@ interface ThemeSelectorModalProps {
 
 export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps) {
   const { theme, setTheme } = useRoyalTheme();
+  const lightThemes = ROYAL_THEMES.filter((item) => item.mode === "light");
+  const darkThemes = ROYAL_THEMES.filter((item) => item.mode === "dark");
 
   return (
     <AnimatePresence>
@@ -30,7 +32,7 @@ export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorMod
             exit={{ scale: 0.95, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="royal-glass-mirror p-6 sm:p-8 rounded-3xl w-full max-w-xl relative overflow-hidden shadow-2xl"
+            className="card-clean p-6 sm:p-8 rounded-2xl w-full max-w-xl relative overflow-hidden"
           >
             {/* Close button */}
             <button
@@ -54,9 +56,13 @@ export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorMod
               </div>
             </div>
 
-            {/* Theme Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {ROYAL_THEMES.map((t) => {
+            {/* Light and dark choices remain clearly separated. */}
+            <div className="space-y-6">
+              {[["Light themes", lightThemes], ["Dark themes", darkThemes]].map(([label, group]) => (
+                <section key={label as string}>
+                  <h4 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">{label as string}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(group as typeof ROYAL_THEMES).map((t) => {
                 const isSelected = theme === t.id;
 
                 return (
@@ -118,6 +124,9 @@ export default function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorMod
                   </button>
                 );
               })}
+                  </div>
+                </section>
+              ))}
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">

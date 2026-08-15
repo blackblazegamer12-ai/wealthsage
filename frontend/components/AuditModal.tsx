@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShieldAlert, Sparkles, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { X, ShieldAlert, Sparkles, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface AuditModalProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export default function AuditModal({
             exit={{ scale: 0.95, y: 16 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="royal-glass-mirror p-6 sm:p-8 rounded-3xl w-full max-w-2xl shadow-2xl relative max-h-[85vh] overflow-y-auto border border-[var(--border-royal)]"
+            className="card-clean p-6 sm:p-8 rounded-2xl w-full max-w-2xl relative max-h-[85vh] overflow-y-auto"
           >
             <button
               type="button"

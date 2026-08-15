@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/react';
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/theme/ThemeContext";
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WealthSage | Royal AI Financial Architect & Wealth Intelligence",
-  description: "Elite, autonomous royal AI financial copilot combining mathematical rigor, automated receipt scanning, zombie subscription detection, and wealth forecasting.",
+  title: "WealthSage | AI Financial Intelligence",
+  description: "A secure AI financial workspace for transaction intelligence, goals, forecasting, and wealth planning.",
+  keywords: ["personal finance", "financial goals", "AI financial assistant", "wealth planning"],
 };
 
 export default function RootLayout({
@@ -26,7 +27,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col antialiased">
         <ThemeProvider>

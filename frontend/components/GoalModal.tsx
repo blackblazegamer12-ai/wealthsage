@@ -48,7 +48,7 @@ export default function GoalModal({
             exit={{ scale: 0.95, y: 16 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="royal-glass-mirror p-6 sm:p-8 rounded-3xl w-full max-w-md shadow-2xl relative border border-[var(--border-royal)]"
+            className="card-clean p-6 sm:p-8 rounded-2xl w-full max-w-md relative"
           >
             <button
               type="button"
@@ -75,6 +75,7 @@ export default function GoalModal({
                 <label className="text-xs text-slate-400 mb-1.5 block font-medium">Goal Name</label>
                 <input 
                   type="text" 
+                  maxLength={120}
                   value={goalForm?.name || ''}
                   onChange={(e) => setGoalForm({ ...goalForm, name: e.target.value })}
                   className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none transition-all text-sm"
@@ -88,6 +89,7 @@ export default function GoalModal({
                   <input 
                     type="number" 
                     min="1"
+                    max="999999999"
                     value={goalForm?.target || ''}
                     onChange={(e) => setGoalForm({ ...goalForm, target: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none text-sm"
@@ -98,6 +100,7 @@ export default function GoalModal({
                   <input 
                     type="number" 
                     min="0"
+                    max="999999999"
                     value={goalForm?.current || ''}
                     onChange={(e) => setGoalForm({ ...goalForm, current: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none text-sm"

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   BarChart3,
@@ -10,12 +10,13 @@ import {
   BookOpen,
   Settings,
   Sparkles,
-  MessageSquare,
   Crown,
-  User as UserIcon,
   LogOut,
   LogIn,
-  Maximize2
+  Command,
+  Plus,
+  ShieldAlert,
+  Palette
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -27,7 +28,7 @@ import SubscriptionModal from "../components/SubscriptionModal";
 import ThemeSelectorModal from "../components/theme/ThemeSelectorModal";
 import FullscreenAIModal from "../components/modals/FullscreenAIModal";
 import ToastContainer, { ToastMessage } from "../components/Toast";
-import ReceiptScannerModal from "../components/ReceiptScannerModal";
+import CommandPalette, { CommandAction } from "../components/CommandPalette";
 
 // Modular Tabs
 import OverviewTab from "../components/tabs/OverviewTab";
@@ -40,11 +41,16 @@ import SettingsTab from "../components/tabs/SettingsTab";
 import { useRoyalTheme } from "../components/theme/ThemeContext";
 import { BriefingData } from "../components/ExecutiveBriefing";
 import { DEMO_PRESETS, DemoPreset } from "../components/DemoPresetBar";
+import { isValidSupabaseConfig, sanitizeAmount, sanitizeTextInput } from "../lib/sanitize";
 
 // --- SUPABASE & API CONFIG ---
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const SUPABASE_CONFIGURED = isValidSupabaseConfig(SUPABASE_URL, SUPABASE_ANON_KEY);
+// The client is never called in demo mode; this inert endpoint avoids a fake external Supabase target.
+const SAFE_SUPABASE_URL = SUPABASE_CONFIGURED ? SUPABASE_URL : "https://localhost.invalid";
+const SAFE_SUPABASE_ANON_KEY = SUPABASE_CONFIGURED ? SUPABASE_ANON_KEY : "demo-mode-disabled";
+const supabase = createClient(SAFE_SUPABASE_URL, SAFE_SUPABASE_ANON_KEY);
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const COLORS = ["#06b6d4", "#8b5cf6", "#10b981", "#ef4444", "#f59e0b", "#ec4899"];
@@ -52,7 +58,7 @@ const COLORS = ["#06b6d4", "#8b5cf6", "#10b981", "#ef4444", "#f59e0b", "#ec4899"
 type ActiveTabType = "overview" | "analytics" | "commitments" | "simulator" | "notebook" | "settings";
 
 export default function Dashboard() {
-  const { theme, activeThemeInfo } = useRoyalTheme();
+  const { theme, setTheme, themes } = useRoyalTheme();
 
   // Core State
   const [user, setUser] = useState<any>(null);
@@ -97,6 +103,7 @@ export default function Dashboard() {
   const [subForm, setSubForm] = useState<any>({ name: "", amount: "", cycle: "Monthly", nextDate: "", icon: "💸", color: "#10B981" });
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isGlassAIOpen, setIsGlassAIOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // Form data for manual record
   const [formData, setFormData] = useState({ name: "", amount: "", type: "expense", category: "Housing" });
@@ -149,6 +156,17 @@ export default function Dashboard() {
   // Master Data Fetcher
   const fetchAllData = async (activeUser?: any) => {
     const targetUserId = activeUser?.id || user?.id || "demo-user-id";
+
+    if (!SUPABASE_CONFIGURED) {
+      const preset = DEMO_PRESETS[0];
+      setNotes([{ id: "1", title: "Welcome to WealthSage", content: "Your local demo workspace is ready." }]);
+      setTransactions(preset.transactions);
+      setGoals(preset.goals);
+      setSubscriptions(preset.subscriptions);
+      fetchExecutiveBriefing(preset.transactions, preset.goals, preset.subscriptions);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Notes — only title, content, user_id, id needed
@@ -216,6 +234,10 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    if (!SUPABASE_CONFIGURED) {
+      const demoBootstrap = window.setTimeout(() => { void fetchAllData(null); }, 0);
+      return () => window.clearTimeout(demoBootstrap);
+    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -254,6 +276,10 @@ export default function Dashboard() {
 
   // Auth Handlers
   const handleGoogleLogin = async () => {
+    if (!SUPABASE_CONFIGURED) {
+      addToast("Cloud sign-in unavailable", "Add valid Supabase public environment variables to enable authentication.", "info");
+      return;
+    }
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -268,10 +294,12 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.error("Sign out error:", err);
+    if (SUPABASE_CONFIGURED) {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error("Sign out error:", err);
+      }
     }
     setUser(null);
     setIsDropdownOpen(false);
@@ -282,16 +310,18 @@ export default function Dashboard() {
   // Transaction Manual Submission
   const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.amount) return;
+    const name = sanitizeTextInput(formData.name);
+    const amount = sanitizeAmount(formData.amount);
+    if (!name || !amount) return;
     const newTx = {
       id: crypto.randomUUID(),
-      name: formData.name,
-      amount: parseFloat(formData.amount),
+      name,
+      amount,
       type: formData.type,
-      category: formData.category || "General",
+      category: sanitizeTextInput(formData.category, 80) || "General",
       user_id: currentUserId
     };
-    await supabase.from("transactions").insert([newTx]);
+    if (SUPABASE_CONFIGURED) await supabase.from("transactions").insert([newTx]);
     const updated = [...transactions, newTx];
     setTransactions(updated);
     fetchExecutiveBriefing(updated, goals, subscriptions);
@@ -339,19 +369,19 @@ export default function Dashboard() {
                 category: update.category || "General",
                 user_id: currentUserId
               };
-              await supabase.from("transactions").insert([newTx]);
+              if (SUPABASE_CONFIGURED) await supabase.from("transactions").insert([newTx]);
               currentList.push(newTx);
               addToast("AI Logged Record", `${newTx.name} ($${newTx.amount})`, "ai");
             } else if (update.action === "update") {
-              await supabase.from("transactions").update({ name: update.name, amount: update.amount, type: update.type, category: update.category }).eq("id", update.id);
+              if (SUPABASE_CONFIGURED) await supabase.from("transactions").update({ name: update.name, amount: update.amount, type: update.type, category: update.category }).eq("id", update.id);
               currentList = currentList.map((tx) => (tx.id === update.id ? { ...tx, ...update } : tx));
               addToast("AI Updated Record", update.name, "ai");
             } else if (update.action === "delete") {
-              await supabase.from("transactions").delete().eq("id", update.id);
+              if (SUPABASE_CONFIGURED) await supabase.from("transactions").delete().eq("id", update.id);
               currentList = currentList.filter((tx) => tx.id !== update.id);
               addToast("AI Deleted Record", "Record removed from ledger.", "ai");
             } else if (update.action === "reset") {
-              await supabase.from("transactions").delete().eq("user_id", currentUserId);
+              if (SUPABASE_CONFIGURED) await supabase.from("transactions").delete().eq("user_id", currentUserId);
               currentList = [];
               addToast("AI Reset Ledger", "All ledger records cleared.", "warning");
             } else if (update.action === "add_subscription") {
@@ -458,12 +488,14 @@ export default function Dashboard() {
   };
 
   const handleSaveNote = async () => {
+    const cleanTitle = sanitizeTextInput(noteTitle, 120) || "Untitled Note";
+    const cleanContent = sanitizeTextInput(noteContent, 20_000);
     if (activeNote) {
-      await supabase.from("notes").update({ title: noteTitle, content: noteContent }).eq("id", activeNote.id);
-      setNotes(notes.map((n) => (n.id === activeNote.id ? { ...n, title: noteTitle, content: noteContent } : n)));
+      if (SUPABASE_CONFIGURED) await supabase.from("notes").update({ title: cleanTitle, content: cleanContent }).eq("id", activeNote.id);
+      setNotes(notes.map((n) => (n.id === activeNote.id ? { ...n, title: cleanTitle, content: cleanContent } : n)));
     } else {
-      const newNote = { id: crypto.randomUUID(), title: noteTitle, content: noteContent, user_id: currentUserId };
-      const { data } = await supabase.from("notes").insert([newNote]).select();
+      const newNote = { id: crypto.randomUUID(), title: cleanTitle, content: cleanContent, user_id: currentUserId };
+      const { data } = SUPABASE_CONFIGURED ? await supabase.from("notes").insert([newNote]).select() : { data: null };
       if (data && data.length > 0) {
         setNotes([...notes, data[0]]);
         setActiveNote(data[0]);
@@ -472,7 +504,7 @@ export default function Dashboard() {
         setActiveNote(newNote);
       }
     }
-    addToast("Note Saved", noteTitle);
+    addToast("Note Saved", cleanTitle);
   };
 
   const createNewNote = () => {
@@ -494,21 +526,27 @@ export default function Dashboard() {
   };
 
   const handleSaveGoal = async () => {
+    const cleanGoal = {
+      name: sanitizeTextInput(goalForm.name || "", 120) || "New Target",
+      target: sanitizeAmount(goalForm.target),
+      current: sanitizeAmount(goalForm.current),
+      icon: sanitizeTextInput(goalForm.icon || "", 8) || "🎯"
+    };
     if (editingGoal) {
-      await supabase.from("goals").update({ name: goalForm.name, target: Number(goalForm.target), current: Number(goalForm.current), icon: goalForm.icon }).eq("id", editingGoal.id);
-      setGoals(goals.map((g) => (g.id === editingGoal.id ? { ...g, ...goalForm } : g)));
-      addToast("Target Updated", goalForm.name);
+      if (SUPABASE_CONFIGURED) await supabase.from("goals").update(cleanGoal).eq("id", editingGoal.id);
+      setGoals(goals.map((g) => (g.id === editingGoal.id ? { ...g, ...cleanGoal } : g)));
+      addToast("Target Updated", cleanGoal.name);
     } else {
       const newGoal = {
         id: crypto.randomUUID(),
-        name: goalForm.name || "New Target",
-        target: Number(goalForm.target) || 0,
-        current: Number(goalForm.current) || 0,
+        name: cleanGoal.name,
+        target: cleanGoal.target,
+        current: cleanGoal.current,
         icon: goalForm.icon || "🎯",
         color: "var(--accent-primary)",
         user_id: currentUserId
       };
-      await supabase.from("goals").insert([newGoal]);
+      if (SUPABASE_CONFIGURED) await supabase.from("goals").insert([newGoal]);
       setGoals([...goals, newGoal]);
       addToast("Target Created", newGoal.name);
     }
@@ -516,7 +554,7 @@ export default function Dashboard() {
   };
 
   const handleDeleteGoal = async (id: string) => {
-    await supabase.from("goals").delete().eq("id", id);
+    if (SUPABASE_CONFIGURED) await supabase.from("goals").delete().eq("id", id);
     setGoals(goals.filter((g) => g.id !== id));
     addToast("Target Removed", "Removed from active tracking.", "warning");
   };
@@ -533,22 +571,29 @@ export default function Dashboard() {
   };
 
   const handleSaveSub = async () => {
+    const cleanSub = {
+      name: sanitizeTextInput(subForm.name || "", 120) || "New Bill",
+      amount: sanitizeAmount(subForm.amount),
+      cycle: sanitizeTextInput(subForm.cycle || "Monthly", 32) || "Monthly",
+      nextDate: sanitizeTextInput(subForm.nextDate || "", 32) || "1st",
+      icon: sanitizeTextInput(subForm.icon || "", 8) || "💳"
+    };
     if (editingSub) {
-      await supabase.from("subscriptions").update({ name: subForm.name, amount: Number(subForm.amount), cycle: subForm.cycle, nextDate: subForm.nextDate, icon: subForm.icon }).eq("id", editingSub.id);
-      setSubscriptions(subscriptions.map((s) => (s.id === editingSub.id ? { ...s, ...subForm, amount: Number(subForm.amount) } : s)));
-      addToast("Bill Updated", subForm.name);
+      if (SUPABASE_CONFIGURED) await supabase.from("subscriptions").update(cleanSub).eq("id", editingSub.id);
+      setSubscriptions(subscriptions.map((s) => (s.id === editingSub.id ? { ...s, ...cleanSub } : s)));
+      addToast("Bill Updated", cleanSub.name);
     } else {
       const newSub = {
         id: crypto.randomUUID(),
-        name: subForm.name || "New Bill",
-        amount: Number(subForm.amount) || 0,
-        cycle: subForm.cycle || "Monthly",
-        nextDate: subForm.nextDate || "1st",
+        name: cleanSub.name,
+        amount: cleanSub.amount,
+        cycle: cleanSub.cycle,
+        nextDate: cleanSub.nextDate,
         icon: subForm.icon || "💸",
         color: "#10B981",
         user_id: currentUserId
       };
-      await supabase.from("subscriptions").insert([newSub]);
+      if (SUPABASE_CONFIGURED) await supabase.from("subscriptions").insert([newSub]);
       setSubscriptions([...subscriptions, newSub]);
       addToast("Bill Created", newSub.name);
     }
@@ -556,7 +601,7 @@ export default function Dashboard() {
   };
 
   const handleDeleteSub = async (id: string) => {
-    await supabase.from("subscriptions").delete().eq("id", id);
+    if (SUPABASE_CONFIGURED) await supabase.from("subscriptions").delete().eq("id", id);
     setSubscriptions(subscriptions.filter((s) => s.id !== id));
     addToast("Bill Removed", "Removed from recurring bills.", "warning");
   };
@@ -601,6 +646,28 @@ export default function Dashboard() {
     { id: "settings" as const, label: "Royal Vault", icon: Settings }
   ];
 
+  const commandActions: CommandAction[] = [
+    ...navItems.map((item) => ({ id: `tab-${item.id}`, label: item.label, description: `Open ${item.label.toLowerCase()}`, group: "Navigate", icon: item.icon, onSelect: () => setActiveTab(item.id) })),
+    { id: "add-record", label: "Add record", description: "Log a new income or expense", group: "Create", icon: Plus, onSelect: () => setIsModalOpen(true) },
+    { id: "audit", label: "Run financial audit", description: "Analyze cash flow and savings rate", group: "Analyze", icon: ShieldAlert, onSelect: runAudit },
+    { id: "add-goal", label: "Add financial goal", description: "Create a savings target", group: "Create", icon: Target, onSelect: () => { setActiveTab("commitments"); handleOpenGoalModal(); } },
+    { id: "open-ai", label: "Ask WealthSage AI", description: "Open the full-screen financial copilot", group: "AI", icon: Sparkles, onSelect: () => setIsGlassAIOpen(true) },
+    { id: "themes", label: "Open theme palette", description: "Choose a light or dark workspace", group: "Preferences", icon: Palette, onSelect: () => setIsThemeModalOpen(true) },
+    ...themes.map((item) => ({ id: `theme-${item.id}`, label: item.name, description: `Switch to the ${item.mode} theme`, group: "Theme", icon: Palette, onSelect: () => setTheme(item.id) })),
+    ...DEMO_PRESETS.map((preset) => ({ id: `persona-${preset.id}`, label: `Load ${preset.name}`, description: preset.roleDescription, group: "Demo", icon: preset.icon, onSelect: () => handleSelectPreset(preset) }))
+  ];
+
+  useEffect(() => {
+    const onCommandShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setIsCommandPaletteOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onCommandShortcut);
+    return () => window.removeEventListener("keydown", onCommandShortcut);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] text-white">
@@ -619,7 +686,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Left Royal Navigation Bar ── */}
-      <aside className="relative z-30 w-full lg:w-56 xl:w-60 shrink-0 bg-black/40 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-[var(--border-royal)] flex flex-col justify-between p-3 lg:p-5 shadow-2xl">
+      <aside className="relative z-30 w-full lg:w-56 xl:w-60 shrink-0 bg-[var(--bg-surface)] border-b lg:border-b-0 lg:border-r border-[var(--border-subtle)] flex flex-col justify-between p-3 lg:p-5">
         {/* Brand Top */}
         <div>
           <div className="flex items-center justify-between mb-6">
@@ -647,14 +714,11 @@ export default function Dashboard() {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
                     isActive
-                      ? "royal-card text-white border-[var(--border-royal)] shadow-lg"
-                      : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                      ? "bg-[var(--accent-glow)] text-[var(--text-primary)] border border-[var(--border-royal)]"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-black/[0.04]"
                   }`}
-                  style={{
-                    boxShadow: isActive ? `0 0 25px -5px var(--accent-glow)` : "none"
-                  }}
                 >
                   <Icon size={16} className={isActive ? "text-[var(--accent-primary)]" : "text-slate-400"} />
                   <span>{item.label}</span>
@@ -664,8 +728,8 @@ export default function Dashboard() {
           </nav>
         </div>
 
-        {/* Bottom Panel: Theme Switcher & Glass Mirror Trigger & Profile */}
-        <div className="space-y-2.5 pt-4 border-t border-white/10 mt-4">
+        {/* Bottom Panel: AI launcher and profile */}
+        <div className="space-y-2.5 pt-4 border-t border-[var(--border-subtle)] mt-4">
           {/* Glass Mirror AI Quick Launcher Button */}
           <button
             type="button"
@@ -673,19 +737,6 @@ export default function Dashboard() {
             className="w-full royal-btn-accent py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Sparkles size={15} /> Open Glass Mirror AI
-          </button>
-
-          {/* Theme Switcher Button */}
-          <button
-            type="button"
-            onClick={() => setIsThemeModalOpen(true)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-slate-300 hover:text-white transition-all"
-          >
-            <span className="flex items-center gap-2">
-              <span>{activeThemeInfo.crownEmoji}</span>
-              <span>{activeThemeInfo.name}</span>
-            </span>
-            <Crown size={14} className="text-[var(--accent-primary)]" />
           </button>
 
           {/* User Auth Profile */}
@@ -735,6 +786,13 @@ export default function Dashboard() {
 
       {/* ── Main Viewport Content ── */}
       <main className="flex-1 relative z-10 p-4 sm:p-6 lg:p-8 xl:p-10 overflow-y-auto max-h-screen">
+        <div className="max-w-5xl mx-auto mb-5 flex items-center justify-end gap-2">
+          <button type="button" onClick={() => setIsCommandPaletteOpen(true)} className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-2 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"><Command size={14} /> Quick actions <kbd className="rounded border border-[var(--border-subtle)] px-1.5 py-0.5 text-[10px]">⌘K</kbd></button>
+          <div className="flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-1.5">
+            {themes.map((item) => <button key={item.id} type="button" title={item.name} aria-label={`Use ${item.name} theme`} onClick={() => setTheme(item.id)} className={`h-5 w-5 rounded-full transition-transform hover:scale-110 ${theme === item.id ? "ring-2 ring-offset-2 ring-offset-[var(--bg-primary)] ring-[var(--accent-primary)]" : ""}`} style={{ backgroundColor: item.accentColor }} />)}
+            <button type="button" onClick={() => setIsThemeModalOpen(true)} className="ml-1 rounded-lg p-1 text-[var(--text-muted)] hover:bg-black/5 hover:text-[var(--text-primary)]" title="Open theme palette"><Palette size={14} /></button>
+          </div>
+        </div>
         <div className="max-w-5xl mx-auto w-full pb-12">
           <AnimatePresence mode="wait">
             {activeTab === "overview" && (
@@ -871,6 +929,12 @@ export default function Dashboard() {
       <ThemeSelectorModal
         isOpen={isThemeModalOpen}
         onClose={() => setIsThemeModalOpen(false)}
+      />
+
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        actions={commandActions}
       />
 
       {/* Fullscreen Glass Mirror AI Modal */}

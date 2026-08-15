@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import traceback
+import re
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
@@ -33,12 +34,15 @@ load_dotenv()
 app = FastAPI(title="WealthSage API", version="1.0.0")
 
 # Enable CORS for Next.js frontend
+environment = os.getenv("ENV", "development").lower()
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
 allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+if environment == "production":
+    allowed_origins = [origin for origin in allowed_origins if origin != "*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins if allowed_origins else ["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -111,6 +115,17 @@ class ExecutiveBriefingRequest(BaseModel):
     goals: List[Dict[str, Any]] = Field(default_factory=list)
     subscriptions: List[Dict[str, Any]] = Field(default_factory=list)
 
+UUID_PATTERN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", re.IGNORECASE)
+
+def validate_request_size(request: Request, max_bytes: int) -> None:
+    content_length = request.headers.get("content-length")
+    if content_length and content_length.isdigit() and int(content_length) > max_bytes:
+        raise HTTPException(status_code=413, detail=f"Request exceeds the {max_bytes // 1024}KB limit.")
+
+def add_rate_limit_headers(response: Response, limit: int) -> None:
+    response.headers["RateLimit-Limit"] = str(limit)
+    response.headers["RateLimit-Policy"] = f"{limit};w=60"
+
 # --- HEALTH CHECK ---
 @app.get("/api/health")
 async def health_check():
@@ -172,8 +187,12 @@ async def exchange_token(body: ExchangeTokenRequest):
 
 # --- AI CHAT ENDPOINT ---
 @app.post("/api/chat")
-async def ask_sage(request: ChatRequest):
+async def ask_sage(request: ChatRequest, raw_request: Request, response: Response):
+    validate_request_size(raw_request, 50 * 1024)
+    add_rate_limit_headers(response, 30)
     user_id = request.user_id or "demo-user-id"
+    if user_id != "demo-user-id" and not UUID_PATTERN.fullmatch(user_id):
+        raise HTTPException(status_code=422, detail="user_id must be a UUID.")
 
     if not groq_client:
         return {
@@ -224,7 +243,9 @@ async def get_executive_briefing(request: ExecutiveBriefingRequest):
 
 # --- FINANCIAL AUDIT ENDPOINT ---
 @app.post("/api/audit")
-async def run_audit(request: AuditRequest):
+async def run_audit(request: AuditRequest, raw_request: Request, response: Response):
+    validate_request_size(raw_request, 100 * 1024)
+    add_rate_limit_headers(response, 12)
     try:
         audit_result = generate_financial_audit(request.transactions)
         return audit_result
