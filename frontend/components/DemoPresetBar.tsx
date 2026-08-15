@@ -97,7 +97,7 @@ interface DemoPresetBarProps {
 
 export default function DemoPresetBar({ activePresetId, onSelectPreset, onReset }: DemoPresetBarProps) {
   return (
-    <div className="w-full bg-[#161824]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-4 mb-8 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+    <div className="w-full bg-[#161824]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-3.5 mb-4 flex flex-wrap items-center justify-between gap-2.5 shadow-lg">
       <div className="flex items-center gap-2">
         <span className="p-1.5 rounded-lg bg-[#8B5CF6]/20 text-[#8B5CF6] border border-[#8B5CF6]/30">
           <Sparkles size={15} />

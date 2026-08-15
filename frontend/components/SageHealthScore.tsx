@@ -81,7 +81,7 @@ export default function SageHealthScore() {
   };
 
   return (
-    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 lg:p-8 text-[#F8FAFC] shadow-2xl relative overflow-hidden">
+    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-6 lg:p-7 text-[#F8FAFC] shadow-2xl relative overflow-hidden">
       {/* Background Accent Lights */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-[#10B981]/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#8B5CF6]/10 rounded-full blur-[100px] pointer-events-none" />

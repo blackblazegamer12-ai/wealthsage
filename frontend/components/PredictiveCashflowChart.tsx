@@ -72,7 +72,7 @@ export default function PredictiveCashflowChart({
   }, [netSurplus, reinvestPct, returnRate, horizonYears]);
 
   return (
-    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 lg:p-8 text-[#F8FAFC] shadow-2xl relative overflow-hidden mb-8 group hover:border-[#06B6D4]/30 transition-all">
+    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 lg:p-6 text-[#F8FAFC] shadow-2xl relative overflow-hidden mb-6 group hover:border-[#06B6D4]/30 transition-all">
       {/* Background ambient lighting */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-[#06B6D4]/10 rounded-full blur-[100px] pointer-events-none" />
 

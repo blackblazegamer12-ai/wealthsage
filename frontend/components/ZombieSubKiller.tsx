@@ -131,7 +131,7 @@ export default function ZombieSubKiller() {
   };
 
   return (
-    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 lg:p-8 text-[#F8FAFC] shadow-2xl relative overflow-hidden">
+    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-6 lg:p-7 text-[#F8FAFC] shadow-2xl relative overflow-hidden">
       {/* Background Ambient Glow */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/10 rounded-full blur-[110px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[110px] pointer-events-none" />

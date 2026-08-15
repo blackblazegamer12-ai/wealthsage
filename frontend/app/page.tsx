@@ -151,8 +151,11 @@ export default function Dashboard() {
     const targetUserId = activeUser?.id || user?.id || "demo-user-id";
 
     try {
-      // Notes
-      const { data: noteData, error: noteError } = await supabase.from("notes").select("*").eq("user_id", targetUserId);
+      // Notes — only title, content, user_id, id needed
+      const { data: noteData, error: noteError } = await supabase
+        .from("notes")
+        .select("id, user_id, title, content")
+        .eq("user_id", targetUserId);
       if (!noteError && noteData && noteData.length > 0) {
         setNotes(noteData);
       } else {
@@ -165,25 +168,35 @@ export default function Dashboard() {
         ]);
       }
 
-      // Transactions
+      // Transactions — only the columns we render
       let loadedTx = DEMO_PRESETS[0].transactions;
-      const { data: txData, error: txError } = await supabase.from("transactions").select("*").eq("user_id", targetUserId);
+      const { data: txData, error: txError } = await supabase
+        .from("transactions")
+        .select("id, user_id, name, amount, type, category, created_at")
+        .eq("user_id", targetUserId)
+        .order("created_at", { ascending: false });
       if (!txError && txData && txData.length > 0) {
         loadedTx = txData;
       }
       setTransactions(loadedTx);
 
-      // Goals
+      // Goals — only the columns we render
       let loadedGoals = DEMO_PRESETS[0].goals;
-      const { data: goalData, error: goalError } = await supabase.from("goals").select("*").eq("user_id", targetUserId);
+      const { data: goalData, error: goalError } = await supabase
+        .from("goals")
+        .select("id, user_id, name, target, current, color, icon")
+        .eq("user_id", targetUserId);
       if (!goalError && goalData && goalData.length > 0) {
         loadedGoals = goalData;
       }
       setGoals(loadedGoals);
 
-      // Subscriptions
+      // Subscriptions — only the columns we render
       let loadedSubs = DEMO_PRESETS[0].subscriptions;
-      const { data: subData, error: subError } = await supabase.from("subscriptions").select("*").eq("user_id", targetUserId);
+      const { data: subData, error: subError } = await supabase
+        .from("subscriptions")
+        .select("id, user_id, name, amount, cycle, nextDate, icon, color")
+        .eq("user_id", targetUserId);
       if (!subError && subData && subData.length > 0) {
         loadedSubs = subData;
       }
@@ -606,13 +619,13 @@ export default function Dashboard() {
       </div>
 
       {/* ── Left Royal Navigation Bar ── */}
-      <aside className="relative z-30 w-full lg:w-64 shrink-0 bg-black/40 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-[var(--border-royal)] flex flex-col justify-between p-4 lg:p-6 shadow-2xl">
+      <aside className="relative z-30 w-full lg:w-56 xl:w-60 shrink-0 bg-black/40 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-[var(--border-royal)] flex flex-col justify-between p-3 lg:p-5 shadow-2xl">
         {/* Brand Top */}
         <div>
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl royal-btn-accent flex items-center justify-center shadow-lg">
-                <Crown size={20} className="text-black" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl royal-btn-accent flex items-center justify-center shadow-lg">
+                <Crown size={18} className="text-black" />
               </div>
               <div>
                 <h1 className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
@@ -634,7 +647,7 @@ export default function Dashboard() {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                     isActive
                       ? "royal-card text-white border-[var(--border-royal)] shadow-lg"
                       : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
@@ -643,7 +656,7 @@ export default function Dashboard() {
                     boxShadow: isActive ? `0 0 25px -5px var(--accent-glow)` : "none"
                   }}
                 >
-                  <Icon size={18} className={isActive ? "text-[var(--accent-primary)]" : "text-slate-400"} />
+                  <Icon size={16} className={isActive ? "text-[var(--accent-primary)]" : "text-slate-400"} />
                   <span>{item.label}</span>
                 </button>
               );
@@ -652,12 +665,12 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Panel: Theme Switcher & Glass Mirror Trigger & Profile */}
-        <div className="space-y-3 pt-6 border-t border-white/10 mt-6">
+        <div className="space-y-2.5 pt-4 border-t border-white/10 mt-4">
           {/* Glass Mirror AI Quick Launcher Button */}
           <button
             type="button"
             onClick={() => setIsGlassAIOpen(true)}
-            className="w-full royal-btn-accent py-3 px-4 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="w-full royal-btn-accent py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Sparkles size={15} /> Open Glass Mirror AI
           </button>
@@ -721,8 +734,8 @@ export default function Dashboard() {
       </aside>
 
       {/* ── Main Viewport Content ── */}
-      <main className="flex-1 relative z-10 p-6 sm:p-8 lg:p-10 xl:p-12 overflow-y-auto max-h-screen">
-        <div className="max-w-6xl mx-auto w-full pb-16">
+      <main className="flex-1 relative z-10 p-4 sm:p-6 lg:p-8 xl:p-10 overflow-y-auto max-h-screen">
+        <div className="max-w-5xl mx-auto w-full pb-12">
           <AnimatePresence mode="wait">
             {activeTab === "overview" && (
               <OverviewTab

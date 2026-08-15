@@ -68,7 +68,7 @@ export default function SettingsTab({
       </div>
 
       {/* 1. ROYAL THEME PRESET SELECTOR */}
-      <div className="royal-card p-6 lg:p-8 rounded-3xl space-y-6">
+      <div className="royal-card p-5 sm:p-6 lg:p-7 rounded-3xl space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
@@ -133,8 +133,8 @@ export default function SettingsTab({
       </div>
 
       {/* 2. CLOUD DATABASE & SERVICE INTEGRITY */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="royal-card p-6 rounded-3xl space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+        <div className="royal-card p-5 sm:p-6 rounded-3xl space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <Database size={20} />
@@ -163,7 +163,7 @@ export default function SettingsTab({
           </div>
         </div>
 
-        <div className="royal-card p-6 rounded-3xl space-y-4">
+        <div className="royal-card p-5 sm:p-6 rounded-3xl space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
               <Key size={20} />
@@ -192,7 +192,7 @@ export default function SettingsTab({
       </div>
 
       {/* 3. DATA EXPORT & ACTIONS */}
-      <div className="royal-card p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
+      <div className="royal-card p-5 sm:p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="font-bold text-white text-base">Export Financial Vault</h3>
           <p className="text-xs text-slate-400 mt-0.5">

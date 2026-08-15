@@ -108,7 +108,7 @@ export default function ExecutiveBriefing({
   };
 
   return (
-    <div className="w-full royal-card rounded-3xl p-6 lg:p-8 text-[#F8FAFC] shadow-2xl relative overflow-hidden mb-8 group transition-all border border-[var(--border-royal)]">
+    <div className="w-full royal-card rounded-3xl p-5 sm:p-6 lg:p-7 text-[#F8FAFC] shadow-2xl relative overflow-hidden mb-6 group transition-all border border-[var(--border-royal)]">
       {/* Aurora gradient backlight */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-[var(--theme-aurora-1)] rounded-full blur-[140px] pointer-events-none opacity-40" />
       <div className="absolute bottom-0 left-10 w-80 h-80 bg-[var(--theme-aurora-2)] rounded-full blur-[120px] pointer-events-none opacity-30" />
