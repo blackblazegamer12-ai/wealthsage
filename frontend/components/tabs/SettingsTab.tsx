@@ -59,10 +59,10 @@ export default function SettingsTab({
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
           Configuration & Vault
         </span>
-        <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
           Settings & Royal Theme Vault
         </h1>
-        <p className="text-slate-400 mt-1.5 text-sm">
+        <p className="text-slate-400 mt-1.5 text-xs sm:text-sm">
           Customize imperial visual themes, verify database integrity, and manage data export feeds.
         </p>
       </div>

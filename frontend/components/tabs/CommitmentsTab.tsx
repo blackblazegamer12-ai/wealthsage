@@ -1,7 +1,15 @@
 "use client";
-import React from "react";
+/**
+ * CommitmentsTab — Goals, Subscriptions & Zombie Sub Killer
+ *
+ * Optimizations applied:
+ * - GoalCard wrapped in React.memo (prevents re-renders when only unrelated state changes)
+ * - SubscriptionRow wrapped in React.memo (prevents re-renders for unchanged bills)
+ * - Responsive heading text sizes (text-2xl sm:text-3xl lg:text-4xl)
+ */
+import React, { memo } from "react";
 import { motion } from "framer-motion";
-import { Target, Plus, ShieldCheck, CreditCard, Sparkles } from "lucide-react";
+import { Target, Plus, CreditCard } from "lucide-react";
 import ZombieSubKiller from "../ZombieSubKiller";
 
 interface CommitmentsTabProps {
@@ -41,6 +49,136 @@ function ProgressRing({ progress, color, size = 128 }: { progress: number; color
   );
 }
 
+// ─── Memoized GoalCard ────────────────────────────────────────────────────────
+// Only re-renders when this goal's data actually changes.
+interface GoalCardProps {
+  goal: any;
+  index: number;
+  onEdit: (goal: any) => void;
+  onDelete: (id: string) => void;
+}
+
+const GoalCard = memo(function GoalCard({ goal, index, onEdit, onDelete }: GoalCardProps) {
+  const progress = Math.round(((goal.current || 0) / (goal.target || 1)) * 100);
+  const remaining = (goal.target || 0) - (goal.current || 0);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: index * 0.05 }}
+      className="royal-card rounded-3xl p-5 sm:p-6 lg:p-7 flex flex-col items-center text-center relative group"
+    >
+      {/* Hover Actions */}
+      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5 z-10">
+        <button
+          onClick={() => onEdit(goal)}
+          className="p-2 bg-white/10 rounded-xl hover:bg-white/20 text-slate-300 transition-colors"
+          title="Edit Target"
+        >
+          ✏️
+        </button>
+        <button
+          onClick={() => onDelete(goal.id)}
+          className="p-2 bg-red-500/10 rounded-xl hover:bg-red-500/30 text-red-400 transition-colors"
+          title="Delete Target"
+        >
+          🗑️
+        </button>
+      </div>
+
+      <div className="mb-4 p-2.5 rounded-2xl bg-white/5 border border-white/10 text-2xl">
+        {goal.icon || "🎯"}
+      </div>
+
+      <div className="relative mb-4">
+        <ProgressRing progress={progress} color={goal.color || "var(--accent-primary)"} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl sm:text-2xl font-extrabold text-white">{progress}%</span>
+          <span className="text-[10px] text-slate-400 uppercase tracking-wider">Funded</span>
+        </div>
+      </div>
+
+      <h3 className="text-sm sm:text-base font-bold text-white mb-0.5">{goal.name}</h3>
+      <p className="text-xs text-slate-400 mb-4">
+        {formatCurrency(goal.current || 0)} of {formatCurrency(goal.target || 0)}
+      </p>
+
+      <div className="w-full space-y-2">
+        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${Math.min(progress, 100)}%`,
+              backgroundColor: goal.color || "var(--accent-primary)",
+              boxShadow: `0 0 8px ${goal.color || "var(--accent-primary)"}80`
+            }}
+          />
+        </div>
+        <div className="flex justify-between text-[11px]">
+          <span className="text-slate-400">{formatCurrency(Math.max(remaining, 0))} left</span>
+          <span className="text-[var(--accent-primary)] font-semibold">
+            {progress >= 100 ? "Goal achieved!" : "On Track"}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
+// ─── Memoized SubscriptionRow ─────────────────────────────────────────────────
+// Only re-renders when this bill's data changes, not on unrelated state updates.
+interface SubRowProps {
+  sub: any;
+  onEdit: (sub: any) => void;
+  onDelete: (id: string) => void;
+}
+
+const SubscriptionRow = memo(function SubscriptionRow({ sub, onEdit, onDelete }: SubRowProps) {
+  return (
+    <div className="p-4 sm:p-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors group relative">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md border border-white/10 shrink-0"
+          style={{ backgroundColor: `${sub.color || "#10B981"}20` }}
+        >
+          {sub.icon || "💸"}
+        </div>
+        <div>
+          <h4 className="text-white font-bold text-xs sm:text-sm">{sub.name}</h4>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-[11px] text-slate-400">{sub.cycle || "Monthly"}</span>
+            <span className="text-[10px] text-slate-500">• Due {sub.nextDate || "1st"}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 sm:gap-4">
+        <p className="text-white font-extrabold text-sm sm:text-base">
+          ${Number(sub.amount || 0).toFixed(2)}
+        </p>
+        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => onEdit(sub)}
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300"
+            title="Edit Bill"
+          >
+            ✏️
+          </button>
+          <button
+            onClick={() => onDelete(sub.id)}
+            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/30 text-rose-400"
+            title="Delete Bill"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+
 export default function CommitmentsTab({
   goals,
   subscriptions,
@@ -66,10 +204,10 @@ export default function CommitmentsTab({
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
           Strategic Commitments & Targets
         </span>
-        <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
           Goals, Subscriptions & Zombie Killer
         </h1>
-        <p className="text-slate-400 mt-1.5 text-sm">
+        <p className="text-slate-400 mt-1.5 text-xs sm:text-sm">
           Track wealth milestones, monitor recurring bills, and dispatch automated cancellation notices.
         </p>
       </div>
@@ -95,75 +233,16 @@ export default function CommitmentsTab({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {goals.map((goal, index) => {
-            const progress = Math.round(((goal.current || 0) / (goal.target || 1)) * 100);
-            const remaining = (goal.target || 0) - (goal.current || 0);
-
-            return (
-              <motion.div
-                key={goal.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: index * 0.05 }}
-                className="royal-card rounded-3xl p-6 lg:p-7 flex flex-col items-center text-center relative group"
-              >
-                {/* Hover Actions */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5 z-10">
-                  <button
-                    onClick={() => onOpenGoalModal(goal)}
-                    className="p-2 bg-white/10 rounded-xl hover:bg-white/20 text-slate-300 transition-colors"
-                    title="Edit Target"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => onDeleteGoal(goal.id)}
-                    className="p-2 bg-red-500/10 rounded-xl hover:bg-red-500/30 text-red-400 transition-colors"
-                    title="Delete Target"
-                  >
-                    🗑️
-                  </button>
-                </div>
-
-                <div className="mb-4 p-2.5 rounded-2xl bg-white/5 border border-white/10 text-2xl">
-                  {goal.icon || "🎯"}
-                </div>
-
-                <div className="relative mb-4">
-                  <ProgressRing progress={progress} color={goal.color || "var(--accent-primary)"} />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-extrabold text-white">{progress}%</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">Funded</span>
-                  </div>
-                </div>
-
-                <h3 className="text-base font-bold text-white mb-0.5">{goal.name}</h3>
-                <p className="text-xs text-slate-400 mb-4">
-                  {formatCurrency(goal.current || 0)} of {formatCurrency(goal.target || 0)}
-                </p>
-
-                <div className="w-full space-y-2">
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${Math.min(progress, 100)}%`,
-                        backgroundColor: goal.color || "var(--accent-primary)",
-                        boxShadow: `0 0 8px ${goal.color || "var(--accent-primary)"}80`
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-400">{formatCurrency(Math.max(remaining, 0))} left</span>
-                    <span className="text-[var(--accent-primary)] font-semibold">
-                      {progress >= 100 ? "Goal achieved!" : "On Track"}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+          {goals.map((goal, index) => (
+            <GoalCard
+              key={goal.id}
+              goal={goal}
+              index={index}
+              onEdit={onOpenGoalModal}
+              onDelete={onDeleteGoal}
+            />
+          ))}
         </div>
 
         {/* Combined Goal Buffer Card */}
@@ -210,47 +289,12 @@ export default function CommitmentsTab({
 
         <div className="royal-card rounded-3xl overflow-hidden divide-y divide-white/[0.06] border border-white/10">
           {subscriptions.map((sub) => (
-            <div
+            <SubscriptionRow
               key={sub.id}
-              className="p-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors group relative"
-            >
-              <div className="flex items-center gap-4">
-                <div
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shadow-md border border-white/10"
-                  style={{ backgroundColor: `${sub.color || "#10B981"}20` }}
-                >
-                  {sub.icon || "💸"}
-                </div>
-                <div>
-                  <h4 className="text-white font-bold text-sm">{sub.name}</h4>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] text-slate-400">{sub.cycle || "Monthly"}</span>
-                    <span className="text-[10px] text-slate-500">• Due on the {sub.nextDate || "1st"}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <p className="text-white font-extrabold text-base">${Number(sub.amount || 0).toFixed(2)}</p>
-
-                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => onOpenSubModal(sub)}
-                    className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300"
-                    title="Edit Bill"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => onDeleteSub(sub.id)}
-                    className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/30 text-rose-400"
-                    title="Delete Bill"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            </div>
+              sub={sub}
+              onEdit={onOpenSubModal}
+              onDelete={onDeleteSub}
+            />
           ))}
         </div>
       </div>

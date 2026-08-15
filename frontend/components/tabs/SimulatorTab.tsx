@@ -15,10 +15,10 @@ export default function SimulatorTab() {
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
           Opportunity Cost & Compound Horizon
         </span>
-        <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
           "What-If" Wealth Opportunity Simulator
         </h1>
-        <p className="text-slate-400 mt-1.5 text-sm">
+        <p className="text-slate-400 mt-1.5 text-xs sm:text-sm">
           Simulate the long-term wealth differential of redirecting small daily habitual spending into high-yield index vehicles.
         </p>
       </div>
