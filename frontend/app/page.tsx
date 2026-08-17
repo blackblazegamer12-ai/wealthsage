@@ -308,7 +308,7 @@ export default function Dashboard() {
   };
 
   // Transaction Manual Submission
-  const handleManualSubmit = async (e: React.FormEvent) => {
+  const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = sanitizeTextInput(formData.name);
     const amount = sanitizeAmount(formData.amount);
@@ -898,7 +898,7 @@ export default function Dashboard() {
         onClose={() => setIsModalOpen(false)}
         formData={formData}
         setFormData={setFormData}
-        onSubmit={handleManualSubmit}
+        onSubmit={handleSaveTransaction}
       />
 
       <AuditModal
