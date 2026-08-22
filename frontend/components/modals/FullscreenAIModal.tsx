@@ -118,7 +118,7 @@ export default function FullscreenAIModal({
                       WealthSage Glass Mirror AI
                     </h3>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[var(--accent-glow)] text-[var(--accent-primary)] border border-[var(--border-royal)]">
-                      LLaMA 3.3 Versatile 70B
+                      Gemini 3.6 Flash
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">

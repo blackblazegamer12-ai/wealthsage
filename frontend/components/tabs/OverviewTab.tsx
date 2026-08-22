@@ -53,7 +53,7 @@ interface TxRowProps {
 
 const TransactionRow = React.memo(function TransactionRow({ tx }: TxRowProps) {
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4 hover:bg-white/[0.02] transition-all group">
+    <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4 transition-all group" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-overlay)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
       <div className="flex items-center gap-3 min-w-0">
         <div
           className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
@@ -66,9 +66,9 @@ const TransactionRow = React.memo(function TransactionRow({ tx }: TxRowProps) {
         </div>
 
         <div className="min-w-0">
-          <p className="font-semibold text-white text-xs sm:text-sm truncate">{tx.name}</p>
+          <p className="font-semibold text-xs sm:text-sm truncate" style={{ color: 'var(--text-primary)' }}>{tx.name}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[11px] text-slate-400 truncate max-w-[100px] sm:max-w-none">{tx.category}</span>
+            <span className="text-[11px] truncate max-w-[100px] sm:max-w-none" style={{ color: 'var(--text-muted)' }}>{tx.category}</span>
             <span
               className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase shrink-0 ${
                 tx.type === "income"
@@ -84,8 +84,9 @@ const TransactionRow = React.memo(function TransactionRow({ tx }: TxRowProps) {
 
       <p
         className={`font-bold text-sm sm:text-base shrink-0 ${
-          tx.type === "income" ? "text-emerald-400" : "text-slate-200"
+          tx.type === "income" ? "text-emerald-500" : ""
         }`}
+        style={tx.type !== 'income' ? { color: 'var(--text-primary)' } : undefined}
       >
         {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount)}
       </p>
@@ -152,10 +153,10 @@ export default function OverviewTab({
           <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
             Royal Financial Overview
           </span>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Welcome back, {userName}
           </h1>
-          <p className="text-slate-400 mt-1.5 text-xs sm:text-sm">
+          <p className="mt-1.5 text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
             Live ledger telemetry, cash velocity metrics, and real-time transaction ledger.
           </p>
         </div>
@@ -167,7 +168,8 @@ export default function OverviewTab({
           <button
             type="button"
             onClick={onOpenAuditModal}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/10 text-[var(--accent-primary)] border border-[var(--border-royal)] text-xs sm:text-sm font-semibold transition-all hover:scale-[1.02]"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-[var(--accent-primary)] text-xs sm:text-sm font-semibold transition-all hover:scale-[1.02]"
+            style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-royal)' }}
           >
             <ShieldAlert size={15} /> Audit
           </button>
@@ -175,7 +177,8 @@ export default function OverviewTab({
           <button
             type="button"
             onClick={onOpenGlassAI}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl royal-card text-white border border-[var(--border-royal)] text-xs sm:text-sm font-semibold transition-all hover:scale-[1.02]"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl royal-card text-[var(--text-primary)] text-xs sm:text-sm font-semibold transition-all hover:scale-[1.02]"
+            style={{ border: '1px solid var(--border-royal)' }}
           >
             <Sparkles size={15} className="text-[var(--accent-primary)]" /> Glass AI
           </button>
@@ -195,32 +198,32 @@ export default function OverviewTab({
         {/* Net Liquidity */}
         <div className="royal-card p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-3 sm:mb-4">
-            <span className="text-slate-400 text-xs sm:text-sm font-medium">Total Balance</span>
-            <div className="p-2 rounded-xl bg-white/5 text-[var(--accent-primary)] border border-white/10">
+            <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Total Balance</span>
+            <div className="p-2 rounded-xl text-[var(--accent-primary)]" style={{ backgroundColor: 'var(--icon-subtle)', border: '1px solid var(--border-subtle)' }}>
               <Wallet size={16} />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             {formatCurrency(currentBalance)}
           </p>
           <div className="flex items-center gap-1.5 mt-2">
             <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse" />
-            <p className="text-xs text-slate-400">Net Retained Liquidity</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Net Retained Liquidity</p>
           </div>
         </div>
 
         {/* Monthly Inflow */}
         <div className="royal-card p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-3 sm:mb-4">
-            <span className="text-slate-400 text-xs sm:text-sm font-medium">Monthly Inflow</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Monthly Inflow</span>
+            <div className="p-2 rounded-xl text-emerald-400 border border-emerald-500/20">
               <TrendingUp size={16} />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-emerald-400">
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-emerald-500">
             {formatCurrency(totalIncome)}
           </p>
-          <div className="flex items-center gap-1 mt-2 text-xs text-emerald-400/90 font-medium">
+          <div className="flex items-center gap-1 mt-2 text-xs font-medium" style={{ color: 'var(--accent-primary)' }}>
             <ArrowUpRight size={13} /> Incoming Cashflow
           </div>
         </div>
@@ -228,49 +231,50 @@ export default function OverviewTab({
         {/* Monthly Outflow */}
         <div className="royal-card p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-3 sm:mb-4">
-            <span className="text-slate-400 text-xs sm:text-sm font-medium">Monthly Outflow</span>
-            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Monthly Outflow</span>
+            <div className="p-2 rounded-xl text-rose-400 border border-rose-500/20">
               <CreditCard size={16} />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             {formatCurrency(totalExpense)}
           </p>
-          <div className="flex items-center gap-1 mt-2 text-xs text-rose-400/90 font-medium">
+          <div className="flex items-center gap-1 mt-2 text-xs font-medium text-rose-400/90">
             <ArrowDownRight size={13} /> Fixed & Variable Spend
           </div>
         </div>
       </div>
 
       {/* Transaction Ledger Table Card */}
-      <div className="royal-card rounded-3xl overflow-hidden border border-[var(--border-royal)]">
-        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+      <div className="royal-card rounded-3xl overflow-hidden" style={{ border: '1px solid var(--border-royal)' }}>
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-wrap items-center justify-between gap-3 sm:gap-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-white">Transaction Ledger</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="text-base sm:text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Transaction Ledger</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               {filteredTransactions.length} of {transactions.length} total records displayed
             </p>
           </div>
 
           {/* Search Filter — input updates immediately, filter is debounced */}
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text"
               value={searchInput}
               onChange={handleSearchChange}
               placeholder="Search description or category..."
-              className="bg-black/30 border border-white/10 rounded-xl pl-8 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[var(--accent-primary)] transition-all w-44 sm:w-56 md:w-64"
+              className="rounded-xl pl-8 pr-4 py-2 text-xs transition-all w-44 sm:w-56 md:w-64 focus:outline-none"
+              style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>
 
-        <div className="divide-y divide-white/[0.05]">
+        <div style={{ borderColor: 'var(--border-subtle)' }} className="divide-y">
           {filteredTransactions.length === 0 ? (
             <div className="px-6 lg:px-8 py-12 sm:py-16 text-center">
-              <Layers className="w-7 h-7 sm:w-8 sm:h-8 mx-auto text-slate-500 mb-2 opacity-50" />
-              <p className="text-slate-400 text-sm font-medium">No transactions found.</p>
-              <p className="text-slate-500 text-xs mt-1">
+              <Layers className="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" style={{ color: 'var(--text-muted)' }} />
+              <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No transactions found.</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                 Log a record manually or tell the AI copilot to add an expenditure.
               </p>
             </div>

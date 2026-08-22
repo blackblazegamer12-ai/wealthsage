@@ -59,10 +59,10 @@ export default function SettingsTab({
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
           Configuration & Vault
         </span>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           Settings & Royal Theme Vault
         </h1>
-        <p className="text-slate-400 mt-1.5 text-xs sm:text-sm">
+        <p className="mt-1.5 text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
           Customize imperial visual themes, verify database integrity, and manage data export feeds.
         </p>
       </div>
@@ -75,9 +75,9 @@ export default function SettingsTab({
               <Crown size={22} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Imperial Aesthetic Theme</h2>
-              <p className="text-xs text-slate-400">
-                Current active preset: <strong className="text-white">{activeThemeInfo.name}</strong> ({activeThemeInfo.badge})
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Imperial Aesthetic Theme</h2>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Current active preset: <strong style={{ color: 'var(--text-primary)' }}>{activeThemeInfo.name}</strong> ({activeThemeInfo.badge})
               </p>
             </div>
           </div>
@@ -93,11 +93,11 @@ export default function SettingsTab({
                 type="button"
                 onClick={() => setTheme(t.id)}
                 className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden ${
-                  isSelected
-                    ? "bg-white/[0.08] border-white/40 shadow-xl"
-                    : "bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
+                  isSelected ? "shadow-xl" : ""
                 }`}
                 style={{
+                  backgroundColor: isSelected ? 'var(--accent-subtle)' : 'var(--surface-overlay)',
+                  borderColor: isSelected ? 'var(--border-royal-hover)' : 'var(--border-subtle)',
                   boxShadow: isSelected ? `0 0 25px -5px ${t.accentColor}40` : "none"
                 }}
               >
@@ -117,8 +117,8 @@ export default function SettingsTab({
                   )}
                 </div>
 
-                <h3 className="font-bold text-white text-sm">{t.name}</h3>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">{t.subtitle}</p>
+                <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t.name}</h3>
+                <p className="text-[10px] mt-0.5 leading-snug" style={{ color: 'var(--text-muted)' }}>{t.subtitle}</p>
 
                 <div
                   className="w-full h-1.5 rounded-full mt-3"
@@ -140,25 +140,25 @@ export default function SettingsTab({
               <Database size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-white text-base">Supabase Cloud Database</h3>
-              <p className="text-xs text-slate-400">PostgreSQL Cloud Persistence</p>
+              <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>Supabase Cloud Database</h3>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>PostgreSQL Cloud Persistence</p>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-black/30 border border-white/5 space-y-2 text-xs">
+          <div className="p-3.5 rounded-2xl space-y-2 text-xs" style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)' }}>
             <div className="flex justify-between">
-              <span className="text-slate-400">Connection Status:</span>
+              <span style={{ color: 'var(--text-muted)' }}>Connection Status:</span>
               <span className="text-emerald-400 font-bold flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Active & Synced
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Auth Identity:</span>
-              <span className="text-white font-medium">{user?.email || "Sandbox Demo User"}</span>
+              <span style={{ color: 'var(--text-muted)' }}>Auth Identity:</span>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{user?.email || "Sandbox Demo User"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Ledger Count:</span>
-              <span className="text-white font-medium">{transactions.length} items</span>
+              <span style={{ color: 'var(--text-muted)' }}>Ledger Count:</span>
+              <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{transactions.length} items</span>
             </div>
           </div>
         </div>
@@ -169,22 +169,22 @@ export default function SettingsTab({
               <Key size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-white text-base">AI Quant Engine & Plaid</h3>
-              <p className="text-xs text-slate-400">LLaMA 3.3 Versatile 70B & Sandbox API</p>
+              <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>AI Quant Engine & Plaid</h3>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Gemini 3.6 Flash & Sandbox API</p>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-black/30 border border-white/5 space-y-2 text-xs">
+          <div className="p-3.5 rounded-2xl space-y-2 text-xs" style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)' }}>
             <div className="flex justify-between">
-              <span className="text-slate-400">Groq Reasoning API:</span>
+              <span style={{ color: 'var(--text-muted)' }}>Groq Reasoning API:</span>
               <span className="text-emerald-400 font-bold">Encrypted & Online</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Plaid Banking Link:</span>
+              <span style={{ color: 'var(--text-muted)' }}>Plaid Banking Link:</span>
               <span className="text-cyan-400 font-bold">Sandbox Mode Available</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">OCR Tesseract Engine:</span>
+              <span style={{ color: 'var(--text-muted)' }}>OCR Tesseract Engine:</span>
               <span className="text-emerald-400 font-bold">Client-Side WASM Ready</span>
             </div>
           </div>
@@ -194,8 +194,8 @@ export default function SettingsTab({
       {/* 3. DATA EXPORT & ACTIONS */}
       <div className="royal-card p-5 sm:p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="font-bold text-white text-base">Export Financial Vault</h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>Export Financial Vault</h3>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Copy a complete JSON snapshot of your transactions, goals, and subscriptions to clipboard.
           </p>
         </div>
@@ -204,7 +204,8 @@ export default function SettingsTab({
           <button
             type="button"
             onClick={handleExportData}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-all border border-white/15"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+            style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)' }}
           >
             <Download size={14} />
             {copiedExport ? "Copied JSON to Clipboard!" : "Copy Snapshot JSON"}

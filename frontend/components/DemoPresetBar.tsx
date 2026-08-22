@@ -97,16 +97,16 @@ interface DemoPresetBarProps {
 
 export default function DemoPresetBar({ activePresetId, onSelectPreset, onReset }: DemoPresetBarProps) {
   return (
-    <div className="w-full bg-[#161824]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-3 sm:p-3.5 mb-4 flex flex-wrap items-center justify-between gap-2.5 shadow-lg">
+    <div className="w-full backdrop-blur-xl rounded-2xl p-3 sm:p-3.5 mb-4 flex flex-wrap items-center justify-between gap-2.5 shadow-lg" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
       <div className="flex items-center gap-2">
-        <span className="p-1.5 rounded-lg bg-[#8B5CF6]/20 text-[#8B5CF6] border border-[#8B5CF6]/30">
+        <span className="p-1.5 rounded-lg" style={{ backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-primary)', border: '1px solid var(--border-royal)' }}>
           <Sparkles size={15} />
         </span>
         <div>
-          <h3 className="text-xs font-bold text-white tracking-wide uppercase">
+          <h3 className="text-xs font-bold tracking-wide uppercase" style={{ color: 'var(--text-primary)' }}>
             ⚡ Judge Quick-Demo Personas
           </h3>
-          <p className="text-[11px] text-slate-400 hidden sm:block">
+          <p className="text-[11px] hidden sm:block" style={{ color: 'var(--text-muted)' }}>
             Instantly load rich financial profiles to evaluate live telemetry, charts, and copilot reasoning.
           </p>
         </div>
@@ -122,11 +122,11 @@ export default function DemoPresetBar({ activePresetId, onSelectPreset, onReset 
               key={preset.id}
               type="button"
               onClick={() => onSelectPreset(preset)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                isActive
-                  ? "bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/40 scale-[1.03] border border-[#8B5CF6]"
-                  : "bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/10 border border-white/10"
-              }`}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+              style={isActive
+                ? { backgroundColor: 'var(--accent-primary)', color: 'var(--text-on-accent)', boxShadow: '0 4px 14px var(--accent-glow)', transform: 'scale(1.03)', border: '1px solid var(--accent-primary)' }
+                : { backgroundColor: 'var(--surface-overlay)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }
+              }
               title={preset.roleDescription}
             >
               <Icon size={14} />
@@ -138,7 +138,8 @@ export default function DemoPresetBar({ activePresetId, onSelectPreset, onReset 
         <button
           type="button"
           onClick={onReset}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.03] hover:bg-red-500/20 text-slate-400 hover:text-red-300 border border-white/10 hover:border-red-500/30 transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/30"
+          style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
           title="Reset to blank ledger for interactive typing test"
         >
           <RotateCcw size={13} />

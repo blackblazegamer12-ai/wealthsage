@@ -1,0 +1,167 @@
+npm notice run frontend@0.1.0 dev
+npm notice run next dev
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\JH2712\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\JH2712\Downloads\wealthsage\frontend\package-lock.json
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+Clerk - DEPRECATION WARNING: "createRouteMatcher" is deprecated and will be removed in the next major release.
+Use resource-based auth checks instead. Move auth checks into each page, layout, API route, or Server Function that accesses protected data. Middleware-based auth checks rely on path matching, which can diverge from how Next.js routes requests and leave protected resources reachable. For a migration guide, see: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/migrate-from-create-route-matcher
+[browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://driving-boar-8036.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:6133)
+[browser] Backend link token unavailable, enabling demo mode: TypeError: Failed to fetch
+    at createLinkToken (components/PlaidLinkButton.tsx:16:32)
+    at PlaidLinkButton.useEffect (components/PlaidLinkButton.tsx:53:5)
+  14 |         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  15 |         
+> 16 |         const response = await fetch(`${apiUrl}/api/plaid/create-link-token`, {
+     |                                ^
+  17 |           method: 'POST',
+  18 |           headers: { 'Content-Type': 'application/json' },
+  19 |           body: JSON.stringify({ user_id: userId }) (components/PlaidLinkButton.tsx:37:17)
+[browser] Backend link token unavailable, enabling demo mode: TypeError: Failed to fetch
+    at createLinkToken (components/PlaidLinkButton.tsx:16:32)
+    at PlaidLinkButton.useEffect (components/PlaidLinkButton.tsx:53:5)
+  14 |         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  15 |         
+> 16 |         const response = await fetch(`${apiUrl}/api/plaid/create-link-token`, {
+     |                                ^
+  17 |           method: 'POST',
+  18 |           headers: { 'Content-Type': 'application/json' },
+  19 |           body: JSON.stringify({ user_id: userId }) (components/PlaidLinkButton.tsx:37:17)
+[Notifications] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.notifications' in the schema cache"
+}
+[Chat API] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.chat_messages' in the schema cache"
+}
+[Notifications] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.notifications' in the schema cache"
+}
+[Chat API] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.chat_messages' in the schema cache"
+}
+[browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://driving-boar-8036.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:6133)
+[browser] Backend link token unavailable, enabling demo mode: TypeError: Failed to fetch
+    at createLinkToken (components/PlaidLinkButton.tsx:16:32)
+    at PlaidLinkButton.useEffect (components/PlaidLinkButton.tsx:53:5)
+  14 |         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  15 |         
+> 16 |         const response = await fetch(`${apiUrl}/api/plaid/create-link-token`, {
+     |                                ^
+  17 |           method: 'POST',
+  18 |           headers: { 'Content-Type': 'application/json' },
+  19 |           body: JSON.stringify({ user_id: userId }) (components/PlaidLinkButton.tsx:37:17)
+[browser] Backend link token unavailable, enabling demo mode: TypeError: Failed to fetch
+    at createLinkToken (components/PlaidLinkButton.tsx:16:32)
+    at PlaidLinkButton.useEffect (components/PlaidLinkButton.tsx:53:5)
+  14 |         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  15 |         
+> 16 |         const response = await fetch(`${apiUrl}/api/plaid/create-link-token`, {
+     |                                ^
+  17 |           method: 'POST',
+  18 |           headers: { 'Content-Type': 'application/json' },
+  19 |           body: JSON.stringify({ user_id: userId }) (components/PlaidLinkButton.tsx:37:17)
+[Notifications] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.notifications' in the schema cache"
+}
+[Notifications] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.notifications' in the schema cache"
+}
+[Chat API] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.chat_messages' in the schema cache"
+}
+[Chat API] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.chat_messages' in the schema cache"
+}
+[browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://driving-boar-8036.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:6133)
+[browser] Backend link token unavailable, enabling demo mode: TypeError: Failed to fetch
+    at createLinkToken (components/PlaidLinkButton.tsx:16:32)
+    at PlaidLinkButton.useEffect (components/PlaidLinkButton.tsx:53:5)
+  14 |         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  15 |         
+> 16 |         const response = await fetch(`${apiUrl}/api/plaid/create-link-token`, {
+     |                                ^
+  17 |           method: 'POST',
+  18 |           headers: { 'Content-Type': 'application/json' },
+  19 |           body: JSON.stringify({ user_id: userId }) (components/PlaidLinkButton.tsx:37:17)
+[browser] Backend link token unavailable, enabling demo mode: TypeError: Failed to fetch
+    at createLinkToken (components/PlaidLinkButton.tsx:16:32)
+    at PlaidLinkButton.useEffect (components/PlaidLinkButton.tsx:53:5)
+  14 |         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  15 |         
+> 16 |         const response = await fetch(`${apiUrl}/api/plaid/create-link-token`, {
+     |                                ^
+  17 |           method: 'POST',
+  18 |           headers: { 'Content-Type': 'application/json' },
+  19 |           body: JSON.stringify({ user_id: userId }) (components/PlaidLinkButton.tsx:37:17)
+[Notifications] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.notifications' in the schema cache"
+}
+[Notifications] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.notifications' in the schema cache"
+}
+[Chat API] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.chat_messages' in the schema cache"
+}
+[Chat API] Fetch error: {
+  code: 'PGRST205',
+  details: null,
+  hint: null,
+  message: "Could not find the table 'public.chat_messages' in the schema cache"
+}
+[browser] Executive briefing fallback: TypeError: Failed to fetch
+    at resilientFetch (lib/api.ts:36:25)
+    at async fetchExecutiveBriefing (app/dashboard/page.tsx:173:20)
+  34 |
+  35 |     try {
+> 36 |       const res = await fetch(url, {
+     |                         ^
+  37 |         ...fetchOptions,
+  38 |         signal: controller.signal,
+  39 |         headers: { (app/dashboard/page.tsx:178:15)
+[browser] Executive briefing fallback: TypeError: Failed to fetch
+    at resilientFetch (lib/api.ts:36:25)
+    at async fetchExecutiveBriefing (app/dashboard/page.tsx:173:20)
+  34 |
+  35 |     try {
+> 36 |       const res = await fetch(url, {
+     |                         ^
+  37 |         ...fetchOptions,
+  38 |         signal: controller.signal,
+  39 |         headers: { (app/dashboard/page.tsx:178:15)

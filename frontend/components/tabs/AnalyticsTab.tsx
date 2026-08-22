@@ -59,10 +59,10 @@ export default function AnalyticsTab({
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
           Telemetry & Intelligence
         </span>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           Quantitative Analytics & Synthesis
         </h1>
-        <p className="text-slate-400 mt-1.5 text-xs sm:text-sm">
+        <p className="mt-1.5 text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
           Deep diagnostic telemetry, predictive compounding projections, and portfolio allocation analytics.
         </p>
       </div>
@@ -92,22 +92,22 @@ export default function AnalyticsTab({
         {/* Wealth Trajectory */}
         <div className="royal-card p-6 lg:p-7 rounded-3xl h-[320px] flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
               <TrendingUp size={15} className="text-[var(--accent-primary)]" /> Wealth Trajectory Curve
             </h3>
           </div>
           <div className="flex-1 w-full min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={wealthData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" stroke="#94A3B8" tickLine={false} axisLine={false} fontSize={11} />
-                <YAxis stroke="#94A3B8" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => `$${v / 1000}k`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+                <XAxis dataKey="month" stroke="var(--text-muted)" tickLine={false} axisLine={false} fontSize={11} />
+                <YAxis stroke="var(--text-muted)" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => `$${v / 1000}k`} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#161824",
+                    backgroundColor: "var(--bg-elevated)",
                     borderColor: "var(--border-royal)",
                     borderRadius: "16px",
-                    color: "#F8FAFC",
+                    color: "var(--text-primary)",
                     fontSize: "12px"
                   }}
                 />
@@ -127,7 +127,7 @@ export default function AnalyticsTab({
         {/* Expense Distribution */}
         <div className="royal-card p-6 lg:p-7 rounded-3xl h-[320px] flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
               <PieIcon size={15} className="text-[#06B6D4]" /> Capital Outflow Allocation
             </h3>
           </div>
@@ -148,10 +148,10 @@ export default function AnalyticsTab({
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#161824",
+                    backgroundColor: "var(--bg-elevated)",
                     borderColor: "var(--border-royal)",
                     borderRadius: "16px",
-                    color: "#F8FAFC",
+                    color: "var(--text-primary)",
                     fontSize: "12px"
                   }}
                 />

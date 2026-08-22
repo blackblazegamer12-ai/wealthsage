@@ -81,21 +81,21 @@ export default function SageHealthScore() {
   };
 
   return (
-    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-6 lg:p-7 text-[#F8FAFC] shadow-2xl relative overflow-hidden">
+    <div className="w-full backdrop-blur-2xl rounded-3xl p-5 sm:p-6 lg:p-7 shadow-2xl relative overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
       {/* Background Accent Lights */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-[#10B981]/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#8B5CF6]/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-[100px] pointer-events-none" style={{ backgroundColor: 'var(--accent-glow)' }} />
+      <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full blur-[100px] pointer-events-none" style={{ backgroundColor: 'var(--accent-glow)' }} />
 
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-white/10 pb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="p-2.5 rounded-2xl bg-gradient-to-br from-[#10B981]/20 to-[#06B6D4]/20 text-[#10B981] border border-[#10B981]/30">
               <Award size={22} />
             </span>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Sage Health Score</h2>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Sage Health Score</h2>
           </div>
-          <p className="text-sm text-[#94A3B8]">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             An AI-driven 0–100 index evaluating your savings velocity, emergency buffer, and debt load.
           </p>
         </div>
@@ -115,7 +115,7 @@ export default function SageHealthScore() {
       {/* Main Grid: Gauge Radial + Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Column: Radial Progress Gauge (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 bg-black/20 rounded-3xl border border-white/5 relative">
+        <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 rounded-3xl relative" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
           <div className="relative flex items-center justify-center">
             <svg width={size} height={size} className="transform -rotate-90">
               {/* Background Track */}
@@ -147,8 +147,8 @@ export default function SageHealthScore() {
 
             {/* Central Numerical Score */}
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-5xl font-black tracking-tight text-white">{totalScore}</span>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">out of 100</span>
+              <span className="text-5xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{totalScore}</span>
+              <span className="text-xs font-semibold uppercase tracking-widest mt-0.5" style={{ color: 'var(--text-muted)' }}>out of 100</span>
             </div>
           </div>
 
@@ -158,13 +158,13 @@ export default function SageHealthScore() {
               <Sparkles size={14} />
               {tier.title}
             </span>
-            <p className="text-xs text-slate-400 mt-2 font-medium">Rating: {tier.badge}</p>
+            <p className="text-xs mt-2 font-medium" style={{ color: 'var(--text-muted)' }}>Rating: {tier.badge}</p>
           </div>
         </div>
 
         {/* Right Column: Breakdown Cards (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
             Health Breakdown Factors
           </h3>
 
@@ -172,21 +172,22 @@ export default function SageHealthScore() {
             {metrics.map((m) => (
               <div
                 key={m.name}
-                className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between"
+                className="p-4 rounded-2xl transition-all flex flex-col justify-between"
+                style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}
               >
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-semibold text-slate-300">{m.name}</span>
+                    <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{m.name}</span>
                     <span className="text-xs font-bold text-[#10B981]">
                       {m.score}/{m.maxScore} pts
                     </span>
                   </div>
-                  <p className="text-base font-bold text-white mb-1">{m.label}</p>
-                  <p className="text-[11px] text-slate-400 leading-snug">{m.detail}</p>
+                  <p className="text-base font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{m.label}</p>
+                  <p className="text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>{m.detail}</p>
                 </div>
 
                 {/* Micro Progress Bar */}
-                <div className="w-full h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
+                <div className="w-full h-1.5 rounded-full mt-3 overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[#10B981] to-[#06B6D4]"
                     style={{ width: `${(m.score / m.maxScore) * 100}%` }}

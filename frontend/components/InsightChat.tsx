@@ -56,10 +56,10 @@ export default function InsightChat({ insights, userId = "demo-user-id" }: Insig
   };
 
   return (
-    <div className="bg-[#161824] p-6 rounded-2xl border border-white/10 relative overflow-hidden flex flex-col h-[500px]">
-      <div className="absolute top-20 right-20 w-40 h-40 bg-[#8B5CF6]/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="p-6 rounded-2xl relative overflow-hidden flex flex-col h-[500px]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
+      <div className="absolute top-20 right-20 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ backgroundColor: 'var(--accent-glow)' }} />
       
-      <h2 className="text-xl font-bold mb-6 text-[#8B5CF6] flex items-center gap-2">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: 'var(--accent-primary)' }}>
         <span>✨</span> AI Insights
       </h2>
 
@@ -68,15 +68,19 @@ export default function InsightChat({ insights, userId = "demo-user-id" }: Insig
           <div 
             key={insight.id}
             className={`p-4 rounded-xl border-l-4 text-sm leading-relaxed ${
-              insight.type === 'advice' ? 'bg-white/[0.04] border-[#8B5CF6]' : 'bg-white/[0.02] border-white/20 opacity-80'
+              insight.type === 'advice' ? 'opacity-100' : 'opacity-80'
             }`}
+            style={{ 
+              backgroundColor: 'var(--surface-overlay)', 
+              borderLeftColor: insight.type === 'advice' ? 'var(--accent-primary)' : 'var(--border-strong)'
+            }}
           >
-            <p><strong className="text-white">{insight.type === 'advice' ? 'WealthSage' : 'Alert'}:</strong> {insight.message}</p>
+            <p><strong style={{ color: 'var(--text-primary)' }}>{insight.type === 'advice' ? 'WealthSage' : 'Alert'}:</strong> <span style={{ color: 'var(--text-secondary)' }}>{insight.message}</span></p>
           </div>
         ))}
       </div>
 
-      <div className="mt-auto pt-4 border-t border-white/10">
+      <div className="mt-auto pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
         <input 
           type="text"
           value={inputMessage}
@@ -84,7 +88,8 @@ export default function InsightChat({ insights, userId = "demo-user-id" }: Insig
           onKeyDown={handleSendMessage}
           disabled={loading}
           placeholder={loading ? "Sage is thinking..." : "Ask Sage (Press Enter)..."}
-          className="w-full bg-[#090A0F] border border-white/20 rounded-xl p-3 text-white placeholder-slate-500 focus:outline-none focus:border-[#8B5CF6] transition-colors"
+          className="w-full rounded-xl p-3 focus:outline-none transition-colors"
+          style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
         />
       </div>
     </div>

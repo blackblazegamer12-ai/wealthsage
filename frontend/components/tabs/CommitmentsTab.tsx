@@ -70,10 +70,10 @@ const GoalCard = memo(function GoalCard({ goal, index, onEdit, onDelete }: GoalC
       className="royal-card rounded-3xl p-5 sm:p-6 lg:p-7 flex flex-col items-center text-center relative group"
     >
       {/* Hover Actions */}
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5 z-10">
-        <button
+      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5 z-10">          <button
           onClick={() => onEdit(goal)}
-          className="p-2 bg-white/10 rounded-xl hover:bg-white/20 text-slate-300 transition-colors"
+          className="p-2 rounded-xl transition-colors"
+          style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)' }}
           title="Edit Target"
         >
           ✏️
@@ -87,25 +87,25 @@ const GoalCard = memo(function GoalCard({ goal, index, onEdit, onDelete }: GoalC
         </button>
       </div>
 
-      <div className="mb-4 p-2.5 rounded-2xl bg-white/5 border border-white/10 text-2xl">
+      <div className="mb-4 p-2.5 rounded-2xl text-2xl" style={{ backgroundColor: 'var(--icon-subtle)', border: '1px solid var(--border-subtle)' }}>
         {goal.icon || "🎯"}
       </div>
 
       <div className="relative mb-4">
         <ProgressRing progress={progress} color={goal.color || "var(--accent-primary)"} />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl sm:text-2xl font-extrabold text-white">{progress}%</span>
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider">Funded</span>
+          <span className="text-xl sm:text-2xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{progress}%</span>
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Funded</span>
         </div>
       </div>
 
-      <h3 className="text-sm sm:text-base font-bold text-white mb-0.5">{goal.name}</h3>
-      <p className="text-xs text-slate-400 mb-4">
+      <h3 className="text-sm sm:text-base font-bold mb-0.5" style={{ color: 'var(--text-primary)' }}>{goal.name}</h3>
+      <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
         {formatCurrency(goal.current || 0)} of {formatCurrency(goal.target || 0)}
       </p>
 
       <div className="w-full space-y-2">
-        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{
@@ -116,7 +116,7 @@ const GoalCard = memo(function GoalCard({ goal, index, onEdit, onDelete }: GoalC
           />
         </div>
         <div className="flex justify-between text-[11px]">
-          <span className="text-slate-400">{formatCurrency(Math.max(remaining, 0))} left</span>
+          <span style={{ color: 'var(--text-muted)' }}>{formatCurrency(Math.max(remaining, 0))} left</span>
           <span className="text-[var(--accent-primary)] font-semibold">
             {progress >= 100 ? "Goal achieved!" : "On Track"}
           </span>
@@ -136,31 +136,32 @@ interface SubRowProps {
 
 const SubscriptionRow = memo(function SubscriptionRow({ sub, onEdit, onDelete }: SubRowProps) {
   return (
-    <div className="p-4 sm:p-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors group relative">
+    <div className="p-4 sm:p-5 flex items-center justify-between transition-colors group relative" style={{ '--hover-bg': 'var(--surface-overlay)' } as any} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-overlay)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
       <div className="flex items-center gap-3 sm:gap-4">
         <div
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md border border-white/10 shrink-0"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-md shrink-0"
           style={{ backgroundColor: `${sub.color || "#10B981"}20` }}
         >
           {sub.icon || "💸"}
         </div>
         <div>
-          <h4 className="text-white font-bold text-xs sm:text-sm">{sub.name}</h4>
+          <h4 className="font-bold text-xs sm:text-sm" style={{ color: 'var(--text-primary)' }}>{sub.name}</h4>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[11px] text-slate-400">{sub.cycle || "Monthly"}</span>
-            <span className="text-[10px] text-slate-500">• Due {sub.nextDate || "1st"}</span>
+            <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{sub.cycle || "Monthly"}</span>
+            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>• Due {sub.nextDate || "1st"}</span>
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4">
-        <p className="text-white font-extrabold text-sm sm:text-base">
+        <p className="font-extrabold text-sm sm:text-base" style={{ color: 'var(--text-primary)' }}>
           ${Number(sub.amount || 0).toFixed(2)}
         </p>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onEdit(sub)}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300"
+            className="p-2 rounded-xl"
+            style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)' }}
             title="Edit Bill"
           >
             ✏️
@@ -204,10 +205,10 @@ export default function CommitmentsTab({
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
           Strategic Commitments & Targets
         </span>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           Goals, Subscriptions & Zombie Killer
         </h1>
-        <p className="text-slate-400 mt-1.5 text-xs sm:text-sm">
+        <p className="mt-1.5 text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
           Track wealth milestones, monitor recurring bills, and dispatch automated cancellation notices.
         </p>
       </div>
@@ -216,10 +217,10 @@ export default function CommitmentsTab({
       <div>
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Target className="text-[var(--accent-primary)]" size={20} /> Financial Goals & Targets
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               {goals.length} active wealth milestones tracked
             </p>
           </div>
@@ -248,18 +249,18 @@ export default function CommitmentsTab({
         {/* Combined Goal Buffer Card */}
         <div className="mt-6 royal-card rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-[var(--border-royal)]">
           <div>
-            <h4 className="text-sm font-bold text-white">Aggregated Milestone Velocity</h4>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Aggregated Milestone Velocity</h4>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               Total accumulated capital: {formatCurrency(totalGoalSaved)} across {goals.length} wealth targets.
             </p>
           </div>
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Target</span>
-              <p className="text-base font-extrabold text-white">{formatCurrency(totalGoalTarget)}</p>
+              <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Total Target</span>
+              <p className="text-base font-extrabold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(totalGoalTarget)}</p>
             </div>
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Overall Ratio</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Overall Ratio</span>
               <p className="text-base font-extrabold text-[var(--accent-primary)]">{combinedRatio}%</p>
             </div>
           </div>
@@ -270,10 +271,10 @@ export default function CommitmentsTab({
       <div>
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <CreditCard className="text-[#10B981]" size={20} /> Recurring Commitments Radar
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               ${totalMonthlySubCost.toFixed(2)}/mo total automated outflow ({subscriptions.length} active bills)
             </p>
           </div>
@@ -287,7 +288,7 @@ export default function CommitmentsTab({
           </button>
         </div>
 
-        <div className="royal-card rounded-3xl overflow-hidden divide-y divide-white/[0.06] border border-white/10">
+        <div className="royal-card rounded-3xl overflow-hidden divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
           {subscriptions.map((sub) => (
             <SubscriptionRow
               key={sub.id}

@@ -108,27 +108,27 @@ export default function ExecutiveBriefing({
   };
 
   return (
-    <div className="w-full royal-card rounded-3xl p-5 sm:p-6 lg:p-7 text-[#F8FAFC] shadow-2xl relative overflow-hidden mb-6 group transition-all border border-[var(--border-royal)]">
+    <div className="w-full royal-card rounded-3xl p-5 sm:p-6 lg:p-7 shadow-2xl relative overflow-hidden mb-6 group transition-all" style={{ border: '1px solid var(--border-royal)', color: 'var(--text-primary)' }}>
       {/* Aurora gradient backlight */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-[var(--theme-aurora-1)] rounded-full blur-[140px] pointer-events-none opacity-40" />
       <div className="absolute bottom-0 left-10 w-80 h-80 bg-[var(--theme-aurora-2)] rounded-full blur-[120px] pointer-events-none opacity-30" />
 
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-white/10 pb-5 relative z-10">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-5 relative z-10" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-2xl royal-btn-accent text-black flex items-center justify-center shadow-lg">
             <Sparkles size={20} className="animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl lg:text-2xl font-bold text-white tracking-tight">
+              <h2 className="text-xl lg:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 AI Executive Briefing
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[var(--accent-glow)] text-[var(--accent-primary)] border border-[var(--border-royal)] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-ping" /> Live Telemetry
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               Autonomous financial synthesis, predictive velocity, and capital allocation strategy.
             </p>
           </div>
@@ -140,7 +140,8 @@ export default function ExecutiveBriefing({
             type="button"
             onClick={handleExportPdf}
             disabled={!briefing || isLoading || isExporting}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/15 text-white border border-white/15 text-xs font-bold transition-all disabled:opacity-40 hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40 hover:scale-[1.02] active:scale-[0.98]"
+            style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)' }}
             title="Download executive PDF report stamped with royal seal"
           >
             <Download size={14} className={isExporting ? "animate-bounce" : ""} />
@@ -152,7 +153,8 @@ export default function ExecutiveBriefing({
             type="button"
             onClick={onRefresh}
             disabled={isLoading}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+            style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
           >
             <RefreshCw size={14} className={isLoading ? "animate-spin text-[var(--accent-primary)]" : ""} />
             {isLoading ? "Synthesizing..." : "Refresh"}
@@ -163,27 +165,27 @@ export default function ExecutiveBriefing({
       {isLoading ? (
         /* Loading Skeleton */
         <div className="space-y-6 py-4 animate-pulse">
-          <div className="h-6 bg-white/5 rounded-xl w-3/4" />
+          <div className="h-6 rounded-xl w-3/4" style={{ backgroundColor: 'var(--surface-overlay)' }} />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="h-20 bg-white/5 rounded-2xl border border-white/5" />
+              <div key={n} className="h-20 rounded-2xl" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }} />
             ))}
           </div>
           <div className="space-y-2">
-            <div className="h-4 bg-white/5 rounded-lg w-full" />
-            <div className="h-4 bg-white/5 rounded-lg w-5/6" />
+            <div className="h-4 rounded-lg w-full" style={{ backgroundColor: 'var(--surface-overlay)' }} />
+            <div className="h-4 rounded-lg w-5/6" style={{ backgroundColor: 'var(--surface-overlay)' }} />
           </div>
         </div>
       ) : briefing ? (
         /* Rendered Briefing */
         <div className="space-y-6 relative z-10">
           {/* Main Headline */}
-          <div className="p-4 rounded-2xl bg-black/40 border border-[var(--border-royal)] flex items-start gap-3">
+          <div className="p-4 rounded-2xl flex items-start gap-3" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-royal)' }}>
             <div className="p-2 rounded-xl bg-[var(--accent-glow)] text-[var(--accent-primary)] shrink-0 mt-0.5">
               <Zap size={18} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white leading-relaxed">
+              <p className="text-sm font-semibold leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                 {briefing.headline}
               </p>
             </div>
@@ -192,14 +194,14 @@ export default function ExecutiveBriefing({
           {/* KPI Telemetry Matrix */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {/* Wealth Velocity */}
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="p-4 rounded-2xl flex flex-col justify-between" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                 <TrendingUp size={13} className="text-emerald-400" /> Velocity Index
               </span>
               <div className="mt-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl lg:text-3xl font-extrabold text-white">{score}</span>
-                  <span className="text-xs text-slate-400 font-medium">/100</span>
+                  <span className="text-2xl lg:text-3xl font-extrabold" style={{ color: 'var(--text-primary)' }}>{score}</span>
+                  <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>/100</span>
                 </div>
                 <span className={`inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${theme.badge}`}>
                   {tier}
@@ -208,34 +210,34 @@ export default function ExecutiveBriefing({
             </div>
 
             {/* Monthly Surplus */}
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="p-4 rounded-2xl flex flex-col justify-between" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                 <DollarSign size={13} className="text-[#06B6D4]" /> Net Surplus
               </span>
               <div className="mt-2">
                 <p className="text-2xl lg:text-3xl font-extrabold text-[#06B6D4]">
                   {formatCurrency(briefing.net_monthly_surplus)}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Monthly Retained Cash</p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Monthly Retained Cash</p>
               </div>
             </div>
 
             {/* Savings Rate */}
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="p-4 rounded-2xl flex flex-col justify-between" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                 <ShieldCheck size={13} className="text-[var(--accent-primary)]" /> Savings Rate
               </span>
               <div className="mt-2">
                 <p className="text-2xl lg:text-3xl font-extrabold text-[var(--accent-primary)]">
                   {briefing.savings_rate_pct}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Target: 20%+ optimal</p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Target: 20%+ optimal</p>
               </div>
             </div>
 
             {/* Cash Runway */}
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 flex flex-col justify-between">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="p-4 rounded-2xl flex flex-col justify-between" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                 <Clock size={13} className="text-amber-400" /> Cash Runway
               </span>
               <div className="mt-2">
@@ -243,9 +245,9 @@ export default function ExecutiveBriefing({
                   <span className="text-2xl lg:text-3xl font-extrabold text-amber-300">
                     {briefing.monthly_runway_months}
                   </span>
-                  <span className="text-xs text-slate-400">mo</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>mo</span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">Zero-revenue buffer</p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Zero-revenue buffer</p>
               </div>
             </div>
           </div>
@@ -254,13 +256,14 @@ export default function ExecutiveBriefing({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left 7 cols: Key Observations */}
             <div className="lg:col-span-7 space-y-2.5">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
                 Strategic Quant Diagnostics
               </p>
               {briefing.key_insights.map((insight, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-all text-xs lg:text-sm text-slate-300"
+                  className="flex items-start gap-2.5 p-3 rounded-xl transition-all text-xs lg:text-sm"
+                  style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] mt-2 shrink-0" />
                   <span className="leading-relaxed">{insight}</span>
@@ -274,7 +277,7 @@ export default function ExecutiveBriefing({
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-500/30 mb-2">
                   ⚡ High-Yield Tactical Move
                 </span>
-                <p className="text-xs lg:text-sm text-white font-medium leading-relaxed mt-1">
+                <p className="text-xs lg:text-sm font-medium leading-relaxed mt-1" style={{ color: 'var(--text-primary)' }}>
                   {briefing.tactical_action}
                 </p>
               </div>

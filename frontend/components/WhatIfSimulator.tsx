@@ -69,21 +69,21 @@ export default function WhatIfSimulator() {
   const multiplier = totalSpent > 0 ? (potentialWealth / totalSpent).toFixed(1) : '1.0';
 
   return (
-    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-6 lg:p-7 text-[#F8FAFC] shadow-2xl relative overflow-hidden">
+    <div className="w-full backdrop-blur-2xl rounded-3xl p-5 sm:p-6 lg:p-7 shadow-2xl relative overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
       {/* Background Glow */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#06B6D4]/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#10B981]/10 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-white/10 pb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="p-2 rounded-xl bg-gradient-to-br from-[#06B6D4]/20 to-[#10B981]/20 text-[#06B6D4] border border-[#06B6D4]/30">
               <Zap size={20} />
             </span>
-            <h2 className="text-2xl font-bold text-white tracking-tight">"What-If" Wealth Simulator</h2>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>"What-If" Wealth Simulator</h2>
           </div>
-          <p className="text-sm text-[#94A3B8]">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Calculate the true opportunity cost of small daily expenses over time when invested.
           </p>
         </div>
@@ -101,7 +101,7 @@ export default function WhatIfSimulator() {
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                   isSelected
                     ? 'bg-[#06B6D4] text-black shadow-lg shadow-[#06B6D4]/30 font-semibold'
-                    : 'bg-white/[0.05] text-slate-300 hover:bg-white/10 border border-white/10'
+                    : ''
                 }`}
               >
                 <Icon size={14} />
@@ -115,11 +115,11 @@ export default function WhatIfSimulator() {
       {/* Main Grid: Controls + Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         {/* Left 2 Cols: Sliders & Controls */}
-        <div className="lg:col-span-2 space-y-6 bg-black/20 p-6 rounded-2xl border border-white/5">
+        <div className="lg:col-span-2 space-y-6 p-6 rounded-2xl" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
           {/* Slider 1: Daily Cost */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <label className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                 <DollarSign size={16} className="text-[#06B6D4]" /> Daily Expense
               </label>
               <span className="text-lg font-bold text-[#06B6D4]">{formatCurrency(dailyCost)} / day</span>
@@ -143,7 +143,7 @@ export default function WhatIfSimulator() {
           {/* Slider 2: Annual Return % */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <label className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                 <TrendingUp size={16} className="text-[#10B981]" /> Annual Investment Return
               </label>
               <span className="text-lg font-bold text-[#10B981]">{annualReturn}% / year</span>
@@ -167,7 +167,7 @@ export default function WhatIfSimulator() {
           {/* Slider 3: Time Horizon */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <label className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                 <Clock size={16} className="text-[#8B5CF6]" /> Time Horizon
               </label>
               <span className="text-lg font-bold text-[#8B5CF6]">{years} Years</span>
@@ -191,9 +191,9 @@ export default function WhatIfSimulator() {
 
         {/* Right Col: Summary Stats */}
         <div className="flex flex-col justify-between space-y-4">
-          <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/10 hover:border-[#06B6D4]/30 transition-all">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Cash Spent</p>
-            <p className="text-2xl font-bold text-slate-300">{formatCurrency(totalSpent)}</p>
+          <div className="p-5 rounded-2xl hover:border-[#06B6D4]/30 transition-all" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Total Cash Spent</p>
+            <p className="text-2xl font-bold" style={{ color: 'var(--text-secondary)' }}>{formatCurrency(totalSpent)}</p>
             <p className="text-xs text-slate-500 mt-1">Direct out-of-pocket cost over {years} yrs</p>
           </div>
 
@@ -208,9 +208,9 @@ export default function WhatIfSimulator() {
             </div>
           </div>
 
-          <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+          <div className="p-4 rounded-2xl flex items-center justify-between" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
             <div>
-              <p className="text-xs text-slate-400 font-medium">Wealth Multiplier</p>
+              <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Wealth Multiplier</p>
               <p className="text-lg font-bold text-[#8B5CF6]">{multiplier}x Return</p>
             </div>
             <div className="p-2 bg-[#8B5CF6]/10 text-[#8B5CF6] rounded-xl border border-[#8B5CF6]/20">
@@ -221,9 +221,9 @@ export default function WhatIfSimulator() {
       </div>
 
       {/* Chart Section */}
-      <div className="h-[320px] bg-black/20 p-5 rounded-2xl border border-white/10">
+      <div className="h-[320px] p-5 rounded-2xl" style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+          <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
             Growth Projection: Money Spent vs. Potential Wealth
           </h3>
         </div>
@@ -239,10 +239,10 @@ export default function WhatIfSimulator() {
                 <stop offset="95%" stopColor="#06B6D4" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" vertical={false} />
-            <XAxis dataKey="year" stroke="#94A3B8" tickLine={false} axisLine={false} fontSize={12} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+            <XAxis dataKey="year" stroke="var(--text-muted)" tickLine={false} axisLine={false} fontSize={12} />
             <YAxis
-              stroke="#94A3B8"
+              stroke="var(--text-muted)"
               tickLine={false}
               axisLine={false}
               fontSize={12}
@@ -250,11 +250,11 @@ export default function WhatIfSimulator() {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#161824',
-                borderColor: 'rgba(255,255,255,0.15)',
+                backgroundColor: 'var(--bg-elevated)',
+                borderColor: 'var(--border-subtle)',
                 borderRadius: '16px',
-                color: '#F8FAFC',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                color: 'var(--text-primary)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
               }}
               formatter={(value: any, name: any) => [
                 formatCurrency(Number(value)),
@@ -265,7 +265,7 @@ export default function WhatIfSimulator() {
               verticalAlign="top"
               height={36}
               formatter={(value) => (
-                <span className="text-xs text-slate-300 font-medium">
+                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                   {value === 'wealth' ? 'Potential Wealth (Invested)' : 'Money Spent (Habit)'}
                 </span>
               )}

@@ -131,36 +131,36 @@ export default function ZombieSubKiller() {
   };
 
   return (
-    <div className="w-full bg-[#161824]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-6 lg:p-7 text-[#F8FAFC] shadow-2xl relative overflow-hidden">
+    <div className="w-full backdrop-blur-2xl rounded-3xl p-5 sm:p-6 lg:p-7 shadow-2xl relative overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
       {/* Background Ambient Glow */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/10 rounded-full blur-[110px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[110px] pointer-events-none" />
 
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-white/10 pb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="p-2.5 rounded-2xl bg-gradient-to-br from-red-500/20 to-amber-500/20 text-red-400 border border-red-500/30 shadow-lg shadow-red-500/10">
               <Skull size={22} />
             </span>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Zombie Subscription Killer</h2>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Zombie Subscription Killer</h2>
           </div>
-          <p className="text-sm text-[#94A3B8]">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Identify forgotten recurring charges, detect price hikes, and dispatch 1-click cancellation emails.
           </p>
         </div>
 
         {/* Filter Badges */}
-        <div className="flex items-center gap-1.5 bg-black/30 p-1.5 rounded-2xl border border-white/10">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl" style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)' }}>
           {(['All', 'Unused', 'Price Hiked', 'Active'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                filter === tab
-                  ? 'bg-white/10 text-white shadow-md border border-white/20'
-                  : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+              style={filter === tab
+                ? { backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-primary)', border: '1px solid var(--border-royal)' }
+                : { color: 'var(--text-muted)' }
+              }
             >
               {tab === 'Unused' ? '🚨 Unused' : tab === 'Price Hiked' ? '📈 Hiked' : tab}
             </button>
@@ -180,11 +180,11 @@ export default function ZombieSubKiller() {
               <AlertTriangle size={24} />
             </div>
             <div>
-              <h3 className="font-bold text-white text-base">
+              <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
                 Zombie Subscriptions Detected! ({unusedSubs.length} Unused)
               </h3>
               <p className="text-xs text-red-200/80 mt-0.5">
-                You are currently wasting <strong className="text-white font-bold">{formatCurrency(monthlyWaste)}/mo</strong> ({formatCurrency(annualWaste)}/year) on services you haven't touched recently.
+                You are currently wasting <strong style={{ color: 'var(--text-primary)' }} className="font-bold">{formatCurrency(monthlyWaste)}/mo</strong> ({formatCurrency(annualWaste)}/year) on services you haven't touched recently.
               </p>
             </div>
           </div>
@@ -199,7 +199,7 @@ export default function ZombieSubKiller() {
       {/* Subscriptions List Grid */}
       <div className="space-y-4">
         {filteredSubs.length === 0 ? (
-          <div className="py-12 text-center text-slate-400">
+          <div className="py-12 text-center" style={{ color: 'var(--text-muted)' }}>
             <CheckCircle className="w-10 h-10 mx-auto text-emerald-400 mb-2 opacity-80" />
             <p className="text-sm">No subscriptions match the selected filter.</p>
           </div>
@@ -220,17 +220,17 @@ export default function ZombieSubKiller() {
                     ? 'bg-red-950/20 border-red-500/30 hover:border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.1)]'
                     : isHiked
                     ? 'bg-amber-950/15 border-amber-500/30 hover:border-amber-500/60'
-                    : 'bg-white/[0.03] border-white/10 hover:border-white/20'
+                    : 'border-[var(--border-subtle)]'
                 }`}
               >
                 {/* Left: Info */}
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-12 h-12 rounded-2xl bg-black/30 border border-white/10 flex items-center justify-center text-2xl shrink-0 shadow-md">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-md" style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)' }}>
                     {sub.icon}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-bold text-white text-base truncate">{sub.name}</h4>
+                      <h4 className="font-bold text-base truncate" style={{ color: 'var(--text-primary)' }}>{sub.name}</h4>
                       
                       {/* Status Badges */}
                       {isUnused && (
@@ -250,10 +250,10 @@ export default function ZombieSubKiller() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
+                    <div className="flex items-center gap-3 text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                       <span>{sub.category}</span>
                       <span>•</span>
-                      <span className={isUnused ? 'text-red-400/90 font-medium' : 'text-slate-400'}>
+                      <span className={isUnused ? 'text-red-400/90 font-medium' : ''} style={!isUnused ? { color: 'var(--text-muted)' } : undefined}>
                         Last used: {sub.lastUsed}
                       </span>
                     </div>
@@ -263,8 +263,8 @@ export default function ZombieSubKiller() {
                 {/* Right: Cost & Actions */}
                 <div className="flex items-center gap-5 mt-3 sm:mt-0 ml-auto">
                   <div className="text-right">
-                    <p className="text-lg font-bold text-white">{formatCurrency(sub.cost)}<span className="text-xs text-slate-400 font-normal">/mo</span></p>
-                    <p className="text-[11px] text-slate-400">({formatCurrency(sub.cost * 12)}/yr)</p>
+                    <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(sub.cost)}<span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>/mo</span></p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>({formatCurrency(sub.cost * 12)}/yr)</p>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -292,7 +292,8 @@ export default function ZombieSubKiller() {
                     <button
                       type="button"
                       onClick={() => handleCopyEmail(sub)}
-                      className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all border border-white/10"
+                      className="p-2.5 rounded-xl transition-all"
+                      style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
                       title="Copy email cancellation template"
                     >
                       {copiedId === sub.id ? <CheckCircle size={16} className="text-emerald-400" /> : <Copy size={16} />}
@@ -302,7 +303,8 @@ export default function ZombieSubKiller() {
                     <button
                       type="button"
                       onClick={() => handleDismiss(sub.id)}
-                      className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all border border-white/10"
+                      className="p-2.5 rounded-xl hover:bg-red-500/20 hover:text-red-400 transition-all"
+                      style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
                       title="Remove from list"
                     >
                       <Trash2 size={16} />
