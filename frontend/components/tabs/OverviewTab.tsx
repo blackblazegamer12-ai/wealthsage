@@ -23,7 +23,6 @@ import {
   Search
 } from "lucide-react";
 import PlaidLinkButton from "../PlaidLinkButton";
-import DemoPresetBar, { DemoPreset } from "../DemoPresetBar";
 import { useDebounce } from "../../lib/hooks";
 
 interface OverviewTabProps {
@@ -31,11 +30,12 @@ interface OverviewTabProps {
   currentBalance: number;
   totalIncome: number;
   totalExpense: number;
+  incomeChangePct: number;
+  expenseChangePct: number;
+  balanceChangePct: number;
   transactions: any[];
   currentUserId: string;
-  activePresetId: string | null;
-  onSelectPreset: (preset: DemoPreset) => void;
-  onResetPreset: () => void;
+  onLoadDemoData: () => void;
   onOpenAddModal: () => void;
   onOpenAuditModal: () => void;
   onOpenGlassAI: () => void;
@@ -43,7 +43,7 @@ interface OverviewTabProps {
 }
 
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 // ─── Memoized Transaction Row ─────────────────────────────────────────────────
 // React.memo prevents re-rendering unchanged rows when parent state changes.
@@ -100,11 +100,12 @@ export default function OverviewTab({
   currentBalance,
   totalIncome,
   totalExpense,
+  incomeChangePct,
+  expenseChangePct,
+  balanceChangePct,
   transactions,
   currentUserId,
-  activePresetId,
-  onSelectPreset,
-  onResetPreset,
+  onLoadDemoData,
   onOpenAddModal,
   onOpenAuditModal,
   onOpenGlassAI,
@@ -140,12 +141,25 @@ export default function OverviewTab({
       transition={{ duration: 0.3 }}
       className="space-y-6 sm:space-y-8"
     >
-      {/* Judge Persona Selector */}
-      <DemoPresetBar
-        activePresetId={activePresetId}
-        onSelectPreset={onSelectPreset}
-        onReset={onResetPreset}
-      />
+      {/* Empty State / Load Demo Data */}
+      {transactions.length === 0 && (
+        <div className="p-6 rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface-overlay)] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Welcome to WealthSage!</h3>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+              Your dashboard is currently empty. Load demo data to explore the features, or add your first record manually.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onLoadDemoData}
+            className="px-5 py-2.5 rounded-xl font-bold text-sm text-black transition-all shadow-lg hover:scale-[1.02] whitespace-nowrap"
+            style={{ backgroundColor: 'var(--accent)' }}
+          >
+            Load Demo Data
+          </button>
+        </div>
+      )}
 
       {/* Hero Welcome Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2">
@@ -174,19 +188,12 @@ export default function OverviewTab({
             <ShieldAlert size={15} /> Audit
           </button>
 
-          <button
-            type="button"
-            onClick={onOpenGlassAI}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl royal-card text-[var(--text-primary)] text-xs sm:text-sm font-semibold transition-all hover:scale-[1.02]"
-            style={{ border: '1px solid var(--border-royal)' }}
-          >
-            <Sparkles size={15} className="text-[var(--accent-primary)]" /> Glass AI
-          </button>
+
 
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl royal-btn-accent text-xs sm:text-sm font-bold shadow-lg transition-all hover:scale-[1.02]"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl btn-brass text-xs sm:text-sm font-bold shadow-lg transition-all hover:scale-[1.02]"
           >
             <Plus size={16} /> Add Record
           </button>
@@ -194,59 +201,100 @@ export default function OverviewTab({
       </div>
 
       {/* KPI Cards Matrix */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* Net Liquidity */}
-        <div className="royal-card p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
+        <div className="glass-panel p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-3 sm:mb-4">
-            <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Total Balance</span>
-            <div className="p-2 rounded-xl text-[var(--accent-primary)]" style={{ backgroundColor: 'var(--icon-subtle)', border: '1px solid var(--border-subtle)' }}>
+            <span className="text-xs sm:text-sm font-medium text-[var(--text-dim)] uppercase tracking-widest font-mono">Total Balance</span>
+            <div className="p-2 rounded-xl border" style={{ color: 'var(--accent)', backgroundColor: 'var(--accent-subtle)', borderColor: 'var(--border-subtle)' }}>
               <Wallet size={16} />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
             {formatCurrency(currentBalance)}
           </p>
           <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse" />
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Net Retained Liquidity</p>
+            <span className={`w-2 h-2 rounded-full ${balanceChangePct >= 0 ? 'animate-pulse' : ''}`} style={{ backgroundColor: balanceChangePct >= 0 ? 'var(--accent)' : '#f43f5e' }} />
+            <p className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest">
+              {balanceChangePct >= 0 ? '+' : ''}{balanceChangePct.toFixed(1)}% vs last month
+            </p>
           </div>
         </div>
 
         {/* Monthly Inflow */}
-        <div className="royal-card p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
+        <div className="glass-panel p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-3 sm:mb-4">
-            <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Monthly Inflow</span>
-            <div className="p-2 rounded-xl text-emerald-400 border border-emerald-500/20">
+            <span className="text-xs sm:text-sm font-medium text-[var(--text-dim)] uppercase tracking-widest font-mono">Monthly Inflow</span>
+            <div className="p-2 rounded-xl text-emerald-400 bg-white/[0.02] border border-white/10">
               <TrendingUp size={16} />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-emerald-500">
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-emerald-400">
             {formatCurrency(totalIncome)}
           </p>
-          <div className="flex items-center gap-1 mt-2 text-xs font-medium" style={{ color: 'var(--accent-primary)' }}>
-            <ArrowUpRight size={13} /> Incoming Cashflow
+          <div className={`flex items-center gap-1 mt-2 text-[10px] font-medium font-mono uppercase tracking-widest ${incomeChangePct >= 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}`}>
+            {incomeChangePct >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />} {incomeChangePct >= 0 ? '+' : ''}{incomeChangePct.toFixed(1)}% vs last month
           </div>
         </div>
 
         {/* Monthly Outflow */}
-        <div className="royal-card p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
+        <div className="glass-panel p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-3 sm:mb-4">
-            <span className="text-xs sm:text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Monthly Outflow</span>
-            <div className="p-2 rounded-xl text-rose-400 border border-rose-500/20">
+            <span className="text-xs sm:text-sm font-medium text-[var(--text-dim)] uppercase tracking-widest font-mono">Monthly Outflow</span>
+            <div className="p-2 rounded-xl text-rose-400 bg-white/[0.02] border border-white/10">
               <CreditCard size={16} />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
             {formatCurrency(totalExpense)}
           </p>
-          <div className="flex items-center gap-1 mt-2 text-xs font-medium text-rose-400/90">
-            <ArrowDownRight size={13} /> Fixed & Variable Spend
+          <div className={`flex items-center gap-1 mt-2 text-[10px] font-medium font-mono uppercase tracking-widest ${expenseChangePct <= 0 ? 'text-emerald-400/80' : 'text-rose-400/80'}`}>
+            {expenseChangePct <= 0 ? <ArrowDownRight size={13} /> : <ArrowUpRight size={13} />} {expenseChangePct > 0 ? '+' : ''}{expenseChangePct.toFixed(1)}% vs last month
+          </div>
+        </div>
+
+        {/* Asset Allocation */}
+        <div className="glass-panel p-5 sm:p-6 lg:p-7 rounded-3xl relative overflow-hidden group border" style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border-royal-hover)' }}>
+          <div className="absolute top-0 left-0 w-full h-1" style={{ background: 'linear-gradient(to right, transparent, var(--accent-brass-dim), transparent)' }}></div>
+          <div className="flex justify-between items-start mb-3">
+            <span className="text-xs sm:text-sm font-medium text-white">Asset Allocation</span>
+          </div>
+          <p className="text-[11px] text-[var(--text-dim)] font-mono leading-relaxed mb-6">55/30/15 Benchmark Rule</p>
+          
+          <div className="relative w-32 h-32 mx-auto mb-6">
+            <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full drop-shadow-xl">
+              {/* Needs 55% */}
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--accent)" strokeWidth="12" strokeDasharray="138.2 251.3" className="opacity-100" />
+              {/* Wants 30% */}
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#06b6d4" strokeWidth="12" strokeDasharray="75.4 251.3" strokeDashoffset="-138.2" className="opacity-90" />
+              {/* Savings 15% */}
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10b981" strokeWidth="12" strokeDasharray="37.7 251.3" strokeDashoffset="-213.6" className="opacity-80" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <p className="text-[9px] font-mono text-[var(--text-dim)] tracking-widest uppercase mb-1">BUDGET</p>
+              <p className="text-xs font-bold text-white">{formatCurrency(totalIncome)}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-auto border-t border-white/10 pt-4">
+            <div className="text-center flex-1 border-r border-white/10">
+              <p className="text-[9px] font-mono text-[var(--text-dim)] uppercase mb-1 flex items-center justify-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: 'var(--accent)'}}></span>NEEDS</p>
+              <p className="text-xs text-white font-bold">55%</p>
+            </div>
+            <div className="text-center flex-1 border-r border-white/10">
+              <p className="text-[9px] font-mono text-[var(--text-dim)] uppercase mb-1 flex items-center justify-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#06b6d4]"></span>WANTS</p>
+              <p className="text-xs text-white font-bold">30%</p>
+            </div>
+            <div className="text-center flex-1">
+              <p className="text-[9px] font-mono text-[var(--text-dim)] uppercase mb-1 flex items-center justify-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>SAVINGS</p>
+              <p className="text-xs text-white font-bold">15%</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Transaction Ledger Table Card */}
-      <div className="royal-card rounded-3xl overflow-hidden" style={{ border: '1px solid var(--border-royal)' }}>
+      <div className="glass-panel rounded-3xl overflow-hidden" style={{ border: '1px solid var(--border-royal)' }}>
         <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-wrap items-center justify-between gap-3 sm:gap-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           <div>
             <h2 className="text-base sm:text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Transaction Ledger</h2>

@@ -59,7 +59,7 @@ export default function GoalModal({
             </button>
 
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 rounded-2xl royal-btn-accent text-black flex items-center justify-center">
+              <div className="p-2.5 rounded-2xl btn-brass text-black flex items-center justify-center">
                 <Target size={20} />
               </div>
               <div>
@@ -132,7 +132,7 @@ export default function GoalModal({
               <button 
                 type="button"
                 onClick={onSave}
-                className="flex-1 px-4 py-3 rounded-xl royal-btn-accent text-xs font-bold transition-all shadow-lg"
+                className="flex-1 px-4 py-3 rounded-xl btn-brass text-xs font-bold transition-all shadow-lg"
               >
                 {editingGoal ? 'Update Target' : 'Save Target'}
               </button>

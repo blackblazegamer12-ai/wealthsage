@@ -57,7 +57,7 @@ export default function TransactionModal({
             </button>
 
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 rounded-2xl royal-btn-accent text-black flex items-center justify-center">
+              <div className="p-2.5 rounded-2xl btn-brass text-black flex items-center justify-center">
                 <PlusCircle size={20} />
               </div>
               <div>
@@ -123,7 +123,7 @@ export default function TransactionModal({
 
               <button
                 type="submit"
-                className="w-full royal-btn-accent py-3.5 rounded-xl mt-3 text-xs font-bold transition-all shadow-lg cursor-pointer"
+                className="w-full btn-brass py-3.5 rounded-xl mt-3 text-xs font-bold transition-all shadow-lg cursor-pointer"
               >
                 Save Record to Ledger
               </button>

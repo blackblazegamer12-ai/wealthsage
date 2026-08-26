@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { transactions = [], goals = [], subscriptions = [], period = "all" } = body;
+  const { transactions = [], goals = [], subscriptions = [] } = body;
 
   const income = transactions
     .filter((t: any) => t.type === "income")
@@ -77,7 +77,6 @@ export async function POST(req: NextRequest) {
   }));
 
   // Velocity metrics
-  const monthlyVelocity = net;
   const wealthScore = Math.max(10, Math.min(99, Math.round(
     50 + (income > 0 ? ((net / income) * 40) : 0) + (transactions.length > 5 ? 10 : 0)
   )));

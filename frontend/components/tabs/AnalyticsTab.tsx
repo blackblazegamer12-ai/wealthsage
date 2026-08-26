@@ -90,79 +90,105 @@ export default function AnalyticsTab({
       {/* Trajectory & Distribution Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Wealth Trajectory */}
-        <div className="royal-card p-6 lg:p-7 rounded-3xl h-[320px] flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-              <TrendingUp size={15} className="text-[var(--accent-primary)]" /> Wealth Trajectory Curve
-            </h3>
+        {wealthData.length > 0 ? (
+          <div className="glass-panel p-6 lg:p-7 rounded-3xl h-[320px] flex flex-col justify-between border" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-2 text-[var(--text-dim)]">
+                <TrendingUp size={12} style={{ color: 'var(--accent)' }} /> Wealth Trajectory Curve
+              </h3>
+            </div>
+            <div className="flex-1 w-full min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={wealthData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="month" stroke="var(--text-dim)" tickLine={false} axisLine={false} fontSize={10} fontFamily="monospace" />
+                  <YAxis stroke="var(--text-dim)" tickLine={false} axisLine={false} fontSize={10} fontFamily="monospace" tickFormatter={(v) => `$${v / 1000}k`} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "black",
+                      borderColor: "var(--border-royal)",
+                      borderRadius: "12px",
+                      color: "white",
+                      fontSize: "11px",
+                      fontFamily: "monospace"
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="wealth"
+                    stroke="var(--accent)"
+                    strokeWidth={3}
+                    dot={{ fill: "var(--accent)", r: 4 }}
+                    activeDot={{ r: 7, fill: "var(--accent)" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div className="flex-1 w-full min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={wealthData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
-                <XAxis dataKey="month" stroke="var(--text-muted)" tickLine={false} axisLine={false} fontSize={11} />
-                <YAxis stroke="var(--text-muted)" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => `$${v / 1000}k`} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--bg-elevated)",
-                    borderColor: "var(--border-royal)",
-                    borderRadius: "16px",
-                    color: "var(--text-primary)",
-                    fontSize: "12px"
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="wealth"
-                  stroke="var(--accent-primary)"
-                  strokeWidth={3}
-                  dot={{ fill: "var(--accent-primary)", r: 4 }}
-                  activeDot={{ r: 7, fill: "var(--accent-primary)" }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+        ) : (
+          <div className="glass-panel p-8 md:p-12 rounded-3xl flex flex-col items-center justify-center text-center border" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
+            <TrendingUp size={24} className="text-[var(--text-dim)] mb-4 opacity-50" />
+            <p className="text-sm font-bold text-white mb-1">No trend data yet</p>
+            <p className="text-[10px] font-mono text-[var(--text-dim)]">Add at least 2 months of data to see wealth trajectory.</p>
           </div>
-        </div>
+        )}
 
         {/* Expense Distribution */}
-        <div className="royal-card p-6 lg:p-7 rounded-3xl h-[320px] flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-              <PieIcon size={15} className="text-[#06B6D4]" /> Capital Outflow Allocation
-            </h3>
+        {expensesByCategory.length > 0 ? (
+          <div className="glass-panel p-6 lg:p-7 rounded-3xl h-[320px] flex flex-col justify-between border" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-2 text-[var(--text-dim)]">
+                <PieIcon size={12} style={{ color: 'var(--accent)' }} /> Capital Outflow Allocation
+              </h3>
+            </div>
+            <div className="flex-1 w-full min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={expensesByCategory}
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {expensesByCategory.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "black",
+                      borderColor: "var(--border-royal)",
+                      borderRadius: "12px",
+                      color: "white",
+                      fontSize: "11px",
+                      fontFamily: "monospace"
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div className="flex-1 w-full min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={expensesByCategory}
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={5}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {expensesByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--bg-elevated)",
-                    borderColor: "var(--border-royal)",
-                    borderRadius: "16px",
-                    color: "var(--text-primary)",
-                    fontSize: "12px"
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+        ) : (
+          <div className="glass-panel p-8 md:p-12 rounded-3xl flex flex-col items-center justify-center text-center relative border" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
+            <div className="absolute top-6 left-6 flex items-center gap-2 font-mono text-[10px] uppercase text-[var(--text-dim)] tracking-widest">
+              <Sparkles size={12} /> Expense Breakdown
+            </div>
+            <div className="w-8 h-8 rounded-full border-[3px] border-[var(--text-dim)] border-t-transparent opacity-50 mb-4 mt-6"></div>
+            <p className="text-sm font-bold text-white mb-1">No expenses categorized yet</p>
+            <p className="text-[10px] font-mono text-[var(--text-dim)]">Add expenses to see your spending breakdown.</p>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Sage Health Score Component */}
-      <SageHealthScore />
+      <SageHealthScore 
+        monthlyIncome={monthlyIncome}
+        monthlyExpense={monthlyExpense}
+        transactionCount={transactionCount}
+        subscriptionCount={subscriptionCount}
+      />
     </motion.div>
   );
 }

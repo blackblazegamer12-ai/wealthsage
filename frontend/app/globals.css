@@ -1,464 +1,323 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   WEALTHSAGE SOVEREIGN DESIGN SYSTEM - CORE CSS VARIABLES & THEME TOKENS
+   WEALTHSAGE (ECHOID AESTHETIC FRAMEWORK)
    ========================================================================== */
 
-:root {
-  /* Default: Imperial Gold (Dark) */
-  --bg-primary: #08090d;
-  --bg-surface: #11131a;
-  --bg-elevated: #181b24;
-  --bg-card: #181b24;
-  --bg-card-hover: #20242f;
-  --bg-glass: rgba(17, 19, 26, 0.85);
-  --bg-glass-strong: rgba(24, 27, 36, 0.94);
+:root, [data-theme="echoid"] {
+  /* 1. ECHOID Obsidian & Brass (Default) */
+  --bg: #000000;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --accent: #B48A5A; /* Warm Brass */
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.62);
+  --text-dimmer: rgba(255, 255, 255, 0.42);
+
+  /* Legacy and App Overrides */
+  --line: var(--border-color);
+  --line-strong: rgba(255, 255, 255, 0.26);
+  --fill-ghost: rgba(255, 255, 255, 0.05);
+  --fill-solid: rgba(255, 255, 255, 0.10);
+  --glass-bg: var(--card-bg);
+  --glass-border: var(--border-color);
+  --glass-radius: 32px;
   
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-inverse: #090a0f;
+  --accent-brass: var(--accent);
+  --accent-brass-hover: #e5c158;
+  --accent-brass-dim: rgba(212, 175, 55, 0.15);
+  --accent-indigo: #6366f1;
   
-  --border-subtle: rgba(148, 163, 184, 0.12);
-  --border-strong: rgba(148, 163, 184, 0.24);
-  --border-royal: rgba(234, 179, 8, 0.32);
-  --border-royal-hover: rgba(234, 179, 8, 0.65);
+  /* Legacy aliases for backward compatibility */
+  --border-subtle: var(--border-color);
+  --border-royal: var(--border-color);
+  --border-royal-hover: rgba(255, 255, 255, 0.3);
+  --text-primary: var(--text-main);
+  --bg-primary: var(--bg);
+  --bg-surface: var(--bg);
+  --bg-elevated: var(--card-bg);
+  --surface-overlay: var(--card-bg);
+  --surface-input: rgba(255, 255, 255, 0.05);
+  --accent-primary: var(--accent);
+  --accent-subtle: rgba(255, 255, 255, 0.05);
+  --bg-card: var(--card-bg);
+}
+
+[data-theme="sapphire"] {
+  /* 2. Midnight Sapphire */
+  --bg: #0B1B3A;
+  --card-bg: rgba(30, 58, 138, 0.4);
+  --border-color: rgba(180, 138, 90, 0.2);
+  --accent: #B48A5A; /* Warm Brass */
+  --text-main: #E7E2D9;
+  --text-muted: rgba(231, 226, 217, 0.6);
+  --text-dimmer: rgba(231, 226, 217, 0.4);
+
+  --line: var(--border-color);
+  --line-strong: rgba(180, 138, 90, 0.4);
+  --fill-ghost: rgba(30, 58, 138, 0.6);
+  --fill-solid: rgba(30, 58, 138, 0.9);
+  --glass-bg: var(--card-bg);
+  --glass-border: var(--border-color);
   
-  --accent-primary: #eab308;
-  --accent-secondary: #ca8a04;
-  --accent-glow: rgba(234, 179, 8, 0.18);
-  --accent-gradient: linear-gradient(135deg, #facc15, #ca8a04);
-  --accent-subtle: rgba(234, 179, 8, 0.12);
-  --text-royal: #fef08a;
+  --accent-brass: var(--accent);
+  --accent-brass-hover: #e5c158;
+  --accent-brass-dim: rgba(212, 175, 55, 0.15);
   
-  --theme-aurora-1: rgba(234, 179, 8, 0.08);
-  --theme-aurora-2: rgba(202, 138, 4, 0.05);
+  --border-subtle: var(--border-color);
+  --border-royal: var(--border-color);
+  --border-royal-hover: rgba(180, 138, 90, 0.5);
+  --text-primary: var(--text-main);
+  --bg-primary: var(--bg);
+  --bg-surface: var(--bg);
+  --bg-elevated: var(--card-bg);
+  --surface-overlay: var(--card-bg);
+  --surface-input: rgba(30, 58, 138, 0.5);
+  --accent-primary: var(--accent);
+  --accent-subtle: rgba(30, 58, 138, 0.5);
+  --bg-card: var(--card-bg);
+}
+
+[data-theme="obsidian"] {
+  /* 3. Obsidian & Emerald */
+  --bg: #000000;
+  --card-bg: rgba(255, 255, 255, 0.02);
+  --border-color: rgba(16, 185, 129, 0.2);
+  --accent: #10B981; /* Electric Emerald */
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --text-dimmer: rgba(255, 255, 255, 0.4);
+
+  --line: var(--border-color);
+  --line-strong: rgba(16, 185, 129, 0.4);
+  --fill-ghost: rgba(16, 185, 129, 0.05);
+  --fill-solid: rgba(16, 185, 129, 0.15);
+  --glass-bg: var(--card-bg);
+  --glass-border: var(--border-color);
   
-  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
-  --shadow-card-hover: 0 14px 35px -4px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 25px rgba(234, 179, 8, 0.25);
-
-  /* Formula Rendering Tokens */
-  --formula-bg: rgba(255, 255, 255, 0.03);
-  --formula-border: rgba(234, 179, 8, 0.25);
-  --formula-text: #fef08a;
-
-  /* Risk & Status Glows */
-  --risk-safe: #10b981;
-  --risk-warning: #f59e0b;
-  --risk-critical: #ef4444;
-  --risk-hyper: #06b6d4;
-
-  /* Theme-Safe Surface & Text Tokens (default: dark) */
-  --surface-input: rgba(0,0,0,0.3);
-  --surface-overlay: rgba(255,255,255,0.02);
-  --text-on-accent: #000000;
-  --icon-subtle: rgba(255,255,255,0.05);
-  --badge-bg: rgba(234, 179, 8, 0.12);
-  --badge-text: #facc15;
+  --accent-brass: var(--accent);
+  --accent-brass-hover: #34d399;
+  --accent-brass-dim: rgba(16, 185, 129, 0.15);
+  
+  --border-subtle: var(--border-color);
+  --border-royal: var(--border-color);
+  --border-royal-hover: rgba(16, 185, 129, 0.5);
+  --text-primary: var(--text-main);
+  --bg-primary: var(--bg);
+  --bg-surface: var(--bg);
+  --bg-elevated: var(--card-bg);
+  --surface-overlay: var(--card-bg);
+  --surface-input: rgba(16, 185, 129, 0.05);
+  --accent-primary: var(--accent);
+  --accent-subtle: rgba(16, 185, 129, 0.1);
+  --bg-card: var(--card-bg);
 }
 
-/* 1. Imperial Gold (Dark Sovereign Standard) */
-[data-theme="imperial-gold"] {
-  --bg-primary: #08090d;
-  --bg-surface: #11131a;
-  --bg-elevated: #181b24;
-  --bg-card: #181b24;
-  --bg-card-hover: #20242f;
-  --bg-glass: rgba(17, 19, 26, 0.85);
-  --bg-glass-strong: rgba(24, 27, 36, 0.94);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-inverse: #090a0f;
-  --border-subtle: rgba(148, 163, 184, 0.12);
-  --border-strong: rgba(148, 163, 184, 0.24);
-  --accent-primary: #eab308;
-  --accent-secondary: #ca8a04;
-  --accent-glow: rgba(234, 179, 8, 0.18);
-  --accent-gradient: linear-gradient(135deg, #facc15, #ca8a04);
-  --accent-subtle: rgba(234, 179, 8, 0.12);
-  --border-royal: rgba(234, 179, 8, 0.32);
-  --border-royal-hover: rgba(234, 179, 8, 0.65);
-  --text-royal: #fef08a;
-  --formula-bg: rgba(255, 255, 255, 0.03);
-  --formula-border: rgba(234, 179, 8, 0.25);
-  --formula-text: #fef08a;
-  --surface-input: rgba(0,0,0,0.3);
-  --surface-overlay: rgba(255,255,255,0.02);
-  --text-on-accent: #000000;
-  --icon-subtle: rgba(255,255,255,0.05);
-  --badge-bg: rgba(234, 179, 8, 0.12);
-  --badge-text: #facc15;
-}
+[data-theme="titanium"] {
+  /* 4. Titanium & Frost */
+  --bg: #1A1A1A;
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.15);
+  --accent: #9CA3AF; /* Silver */
+  --text-main: #F3F4F6;
+  --text-muted: rgba(243, 244, 246, 0.6);
+  --text-dimmer: rgba(243, 244, 246, 0.4);
 
-/* 2. Emerald Sovereign (Dark Dynasty) */
-[data-theme="emerald-sovereign"] {
-  --bg-primary: #07100c;
-  --bg-surface: #101a15;
-  --bg-elevated: #17231d;
-  --bg-card: #17231d;
-  --bg-card-hover: #213027;
-  --bg-glass: rgba(16, 26, 21, 0.85);
-  --bg-glass-strong: rgba(23, 35, 29, 0.94);
-  --text-primary: #f0fdf4;
-  --text-secondary: #d1fae5;
-  --text-muted: #86a394;
-  --text-inverse: #07100c;
-  --border-subtle: rgba(110, 231, 183, 0.14);
-  --border-strong: rgba(110, 231, 183, 0.25);
-  --accent-primary: #10b981;
-  --accent-secondary: #059669;
-  --accent-glow: rgba(16, 185, 129, 0.18);
-  --accent-gradient: linear-gradient(135deg, #34d399, #059669);
-  --accent-subtle: rgba(16, 185, 129, 0.12);
-  --border-royal: rgba(16, 185, 129, 0.32);
-  --border-royal-hover: rgba(16, 185, 129, 0.65);
-  --text-royal: #a7f3d0;
-  --formula-bg: rgba(16, 185, 129, 0.05);
-  --formula-border: rgba(16, 185, 129, 0.28);
-  --formula-text: #a7f3d0;
+  --line: var(--border-color);
+  --line-strong: rgba(255, 255, 255, 0.3);
+  --fill-ghost: rgba(255, 255, 255, 0.08);
+  --fill-solid: rgba(255, 255, 255, 0.15);
+  --glass-bg: var(--card-bg);
+  --glass-border: var(--border-color);
+  
+  --accent-brass: var(--accent);
+  --accent-brass-hover: #e5e7eb;
+  --accent-brass-dim: rgba(255, 255, 255, 0.1);
+  
+  --border-subtle: var(--border-color);
+  --border-royal: var(--border-color);
+  --border-royal-hover: rgba(255, 255, 255, 0.4);
+  --text-primary: var(--text-main);
+  --bg-primary: var(--bg);
+  --bg-surface: var(--bg);
+  --bg-elevated: var(--card-bg);
+  --surface-overlay: var(--card-bg);
+  --surface-input: rgba(255, 255, 255, 0.05);
+  --accent-primary: var(--accent);
+  --accent-subtle: rgba(255, 255, 255, 0.1);
+  --bg-card: var(--card-bg);
 }
-
-/* 3. Regal Burgundy (Dark Imperial Velvet) */
-[data-theme="regal-burgundy"] {
-  --bg-primary: #10080d;
-  --bg-surface: #1a1117;
-  --bg-elevated: #231720;
-  --bg-card: #231720;
-  --bg-card-hover: #30202c;
-  --bg-glass: rgba(26, 17, 23, 0.85);
-  --bg-glass-strong: rgba(35, 23, 32, 0.94);
-  --text-primary: #fff7f8;
-  --text-secondary: #ffe4e6;
-  --text-muted: #b09ba7;
-  --text-inverse: #10080d;
-  --border-subtle: rgba(251, 113, 133, 0.14);
-  --border-strong: rgba(251, 113, 133, 0.25);
-  --accent-primary: #f43f5e;
-  --accent-secondary: #e11d48;
-  --accent-glow: rgba(244, 63, 94, 0.18);
-  --accent-gradient: linear-gradient(135deg, #fb7185, #e11d48);
-  --accent-subtle: rgba(244, 63, 94, 0.12);
-  --border-royal: rgba(244, 63, 94, 0.32);
-  --border-royal-hover: rgba(244, 63, 94, 0.65);
-  --text-royal: #fecdd3;
-  --formula-bg: rgba(244, 63, 94, 0.05);
-  --formula-border: rgba(244, 63, 94, 0.28);
-  --formula-text: #fecdd3;
-}
-
-/* 4. Platinum Obsidian (Dark Celestial Order) */
-[data-theme="platinum-obsidian"] {
-  --bg-primary: #080b11;
-  --bg-surface: #111720;
-  --bg-elevated: #18212d;
-  --bg-card: #18212d;
-  --bg-card-hover: #222d3a;
-  --bg-glass: rgba(17, 23, 32, 0.85);
-  --bg-glass-strong: rgba(24, 33, 45, 0.94);
-  --text-primary: #f8fafc;
-  --text-secondary: #e2e8f0;
-  --text-muted: #94a3b8;
-  --text-inverse: #080b11;
-  --border-subtle: rgba(125, 211, 252, 0.14);
-  --border-strong: rgba(125, 211, 252, 0.25);
-  --accent-primary: #38bdf8;
-  --accent-secondary: #818cf8;
-  --accent-glow: rgba(56, 189, 248, 0.18);
-  --accent-gradient: linear-gradient(135deg, #e2e8f0, #38bdf8);
-  --accent-subtle: rgba(56, 189, 248, 0.12);
-  --border-royal: rgba(56, 189, 248, 0.32);
-  --border-royal-hover: rgba(56, 189, 248, 0.65);
-  --text-royal: #e0f2fe;
-  --formula-bg: rgba(56, 189, 248, 0.05);
-  --formula-border: rgba(56, 189, 248, 0.28);
-  --formula-text: #e0f2fe;
-}
-
-/* 5. Ethereal Cream (Muted Dusty Lavender — Sophisticated Light) */
-[data-theme="ethereal-cream"] {
-  --bg-primary: #f4f2ee;
-  --bg-surface: #faf8f5;
-  --bg-elevated: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f0ede8;
-  --bg-glass: rgba(250, 248, 245, 0.90);
-  --bg-glass-strong: rgba(255, 255, 255, 0.97);
-  --text-primary: #2d2a3e;
-  --text-secondary: #5a5672;
-  --text-muted: #8a8599;
-  --text-inverse: #faf8f5;
-  --border-subtle: rgba(90, 86, 114, 0.10);
-  --border-strong: rgba(90, 86, 114, 0.18);
-  --accent-primary: #7c6daa;
-  --accent-secondary: #9580c4;
-  --accent-glow: rgba(124, 109, 170, 0.10);
-  --accent-gradient: linear-gradient(135deg, #9580c4, #7c6daa);
-  --accent-subtle: rgba(124, 109, 170, 0.06);
-  --border-royal: rgba(124, 109, 170, 0.22);
-  --border-royal-hover: rgba(124, 109, 170, 0.40);
-  --text-royal: #6b5a96;
-  --shadow-card: 0 2px 12px -1px rgba(45, 42, 62, 0.06), 0 1px 3px rgba(45, 42, 62, 0.04);
-  --shadow-card-hover: 0 8px 28px -4px rgba(45, 42, 62, 0.10), 0 2px 6px rgba(45, 42, 62, 0.05);
-  --shadow-glow: 0 0 20px rgba(124, 109, 170, 0.10);
-  --formula-bg: rgba(124, 109, 170, 0.04);
-  --formula-border: rgba(124, 109, 170, 0.18);
-  --formula-text: #6b5a96;
-  --surface-input: #f0ede8;
-  --surface-overlay: rgba(45, 42, 62, 0.04);
-  --text-on-accent: #ffffff;
-  --icon-subtle: rgba(90, 86, 114, 0.10);
-  --badge-bg: rgba(124, 109, 170, 0.08);
-  --badge-text: #7c6daa;
-}
-
-/* 6. Sage Harmony (Muted Evergreen — Calm Focus Light) */
-[data-theme="sage-harmony"] {
-  --bg-primary: #f0f4ef;
-  --bg-surface: #f7faf6;
-  --bg-elevated: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #ecf2ea;
-  --bg-glass: rgba(247, 250, 246, 0.90);
-  --bg-glass-strong: rgba(255, 255, 255, 0.97);
-  --text-primary: #243d30;
-  --text-secondary: #4a6b58;
-  --text-muted: #7a9586;
-  --text-inverse: #f7faf6;
-  --border-subtle: rgba(74, 107, 88, 0.10);
-  --border-strong: rgba(74, 107, 88, 0.18);
-  --accent-primary: #5a9a7e;
-  --accent-secondary: #6dae91;
-  --accent-glow: rgba(90, 154, 126, 0.10);
-  --accent-gradient: linear-gradient(135deg, #6dae91, #5a9a7e);
-  --accent-subtle: rgba(90, 154, 126, 0.06);
-  --border-royal: rgba(90, 154, 126, 0.22);
-  --border-royal-hover: rgba(90, 154, 126, 0.40);
-  --text-royal: #4a8a6e;
-  --shadow-card: 0 2px 12px -1px rgba(36, 61, 48, 0.06), 0 1px 3px rgba(36, 61, 48, 0.04);
-  --shadow-card-hover: 0 8px 28px -4px rgba(36, 61, 48, 0.10), 0 2px 6px rgba(36, 61, 48, 0.05);
-  --shadow-glow: 0 0 20px rgba(90, 154, 126, 0.10);
-  --formula-bg: rgba(90, 154, 126, 0.04);
-  --formula-border: rgba(90, 154, 126, 0.18);
-  --formula-text: #4a8a6e;
-  --surface-input: #ecf2ea;
-  --surface-overlay: rgba(36, 61, 48, 0.04);
-  --text-on-accent: #ffffff;
-  --icon-subtle: rgba(74, 107, 88, 0.10);
-  --badge-bg: rgba(90, 154, 126, 0.08);
-  --badge-text: #5a9a7e;
-}
-
-/* ==========================================================================
-   BASE TYPOGRAPHY & BODY CONFIGURATION
-   ========================================================================== */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Base styles to respect ECHOID framework */
+* {
+  border-color: var(--line);
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Universal borders */
-body, body * {
-  border-color: var(--border-subtle);
-}
-
 /* ==========================================================================
-   DESIGN SYSTEM UTILITIES & CARDS
+   GLASSMORPHISM & DASHBOARD SURFACES
    ========================================================================== */
 
-.royal-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-card);
-  transition: background-color 0.25s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+.glass-panel {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-/* Light theme cards get extra depth for 3D feel */
-[data-theme="ethereal-cream"] .royal-card,
-[data-theme="sage-harmony"] .royal-card {
-  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.8);
-}
-[data-theme="ethereal-cream"] .royal-card:hover,
-[data-theme="sage-harmony"] .royal-card:hover {
-  box-shadow: var(--shadow-card-hover), inset 0 1px 0 rgba(255,255,255,0.9);
+.glass-nav {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border-bottom: 1px solid var(--glass-border);
 }
 
-.royal-card:hover {
-  border-color: var(--border-royal-hover);
-  box-shadow: var(--shadow-card-hover);
+/* Custom Buttons (ECHOID style pill buttons + Brass) */
+.btn-brass {
+  background-color: var(--accent-brass);
+  color: #000;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: all 0.25s var(--ease-premium);
 }
 
-.royal-glass {
-  background: var(--bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
-}
-
-.royal-btn-accent {
-  background: var(--accent-gradient);
-  color: #000000;
-  font-weight: 700;
-  box-shadow: 0 4px 16px var(--accent-glow);
-  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
-}
-
-.royal-btn-accent:hover {
+.btn-brass:hover {
+  background-color: var(--accent-brass-hover);
   transform: translateY(-1px);
-  filter: brightness(1.06);
-  box-shadow: 0 6px 22px var(--accent-glow);
+  box-shadow: 0 4px 20px var(--accent-brass-dim);
 }
 
-.royal-btn-secondary {
-  background-color: var(--bg-surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+.btn-ghost-glass {
+  background-color: var(--fill-ghost);
+  color: var(--text);
+  border-radius: 9999px;
+  border: 1px solid var(--line-strong);
+  transition: all 0.25s var(--ease-premium);
 }
 
-.royal-btn-secondary:hover {
-  background-color: var(--bg-card-hover);
-  border-color: var(--border-royal);
-  color: var(--text-royal);
+.btn-ghost-glass:hover {
+  background-color: var(--fill-solid);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
-.royal-accent-text {
-  color: var(--accent-primary);
+.btn--ghost {
+  background: var(--fill-ghost);
+  color: var(--text-dimmer);
+  transition: all 0.25s ease;
+}
+.btn--ghost:hover {
+  background: rgba(255,255,255,0.09);
+  color: white;
 }
 
-.royal-accent-border {
-  border-color: var(--border-royal);
+.btn--solid {
+  background: var(--fill-solid);
+  color: white;
+  transition: all 0.25s ease;
+}
+.btn--solid:hover {
+  background: rgba(255,255,255,0.17);
 }
 
-/* ==========================================================================
-   KATEX MATHEMATICAL FORMULA FORMATTING
-   ========================================================================== */
-
-.katex-display {
-  margin: 0.5em 0 !important;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0.25em 0;
+/* Status Tags */
+.status-tag {
+  background: var(--fill-ghost);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  text-transform: uppercase;
 }
 
-.katex {
-  font-size: 1.12em !important;
-  text-rendering: auto;
-  line-height: 1.25;
+/* Form Inputs */
+.echoid-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0;
+  color: white;
+  transition: border-color 0.25s ease;
+}
+.echoid-input::placeholder {
+  color: var(--text-dim);
+}
+.echoid-input:focus {
+  outline: none;
+  border-bottom-color: rgba(255,255,255,0.85);
+}
+.echoid-input:focus::placeholder {
+  color: var(--text-dimmer);
 }
 
-/* Light mode overrides for high-contrast visibility */
-[data-theme="ethereal-cream"] .katex,
-[data-theme="sage-harmony"] .katex {
-  color: var(--text-primary);
-}
-
-/* Custom Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--line-strong);
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
+  background: var(--text-dim);
 }
 
-/* ==========================================================================
-   RANGE INPUT STYLING (Light & Dark Themes)
-   ========================================================================== */
-
-input[type="range"] {
-  height: 6px;
-  border-radius: 9999px;
-  background: var(--border-subtle);
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
+/* Focus Outline */
+*:focus-visible {
+  outline: 1px solid rgba(255,255,255,0.7);
+  outline-offset: 3px;
 }
 
-input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 9999px;
-  background: var(--accent-primary);
-  border: 2px solid var(--bg-card);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+
+
+@keyframes scan {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(128px); }
+  100% { transform: translateY(0); }
+}
+.animate-scan {
+  animation: scan 3s ease-in-out infinite;
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
 }
 
-input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 9999px;
-  background: var(--accent-primary);
-  border: 2px solid var(--bg-card);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  cursor: pointer;
-}
-
-/* Focus ring for interactive elements */
-input:focus-visible,
-textarea:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
-
-/* ==========================================================================
-   LIGHT THEME 3D DEPTH ENHANCEMENTS
-   ========================================================================== */
-
-[data-theme="ethereal-cream"] .royal-btn-accent,
-[data-theme="sage-harmony"] .royal-btn-accent {
-  box-shadow: 0 4px 14px -2px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.06);
-}
-[data-theme="ethereal-cream"] .royal-btn-accent:hover,
-[data-theme="sage-harmony"] .royal-btn-accent:hover {
-  box-shadow: 0 6px 20px -2px var(--accent-glow), 0 3px 6px rgba(0,0,0,0.08);
-}
-
-/* Subtle gradient border effect on hover for light themes */
-[data-theme="ethereal-cream"] .royal-card:hover,
-[data-theme="sage-harmony"] .royal-card:hover {
-  border-color: var(--border-royal-hover);
-}
-
-/* Active nav tab gradient on light themes */
-[data-theme="ethereal-cream"] [style*="var(--accent-gradient)"] {
-  box-shadow: 0 4px 14px var(--accent-glow);
-}
-[data-theme="sage-harmony"] [style*="var(--accent-gradient)"] {
-  box-shadow: 0 4px 14px var(--accent-glow);
-}

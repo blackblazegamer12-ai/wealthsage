@@ -12,9 +12,11 @@ import {
   Cpu,
   Lock,
   ChevronRight,
-  ExternalLink
+  LineChart
 } from "lucide-react";
 import ParametricHeroCanvas from "./ParametricHeroCanvas";
+import RollingNumber from "./RollingNumber";
+import BeamButton from "./BeamButton";
 
 export default function HeroSection() {
   return (
@@ -63,17 +65,14 @@ export default function HeroSection() {
 
           {/* Action CTAs */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-wrap items-center justify-center gap-4 mt-8"
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center gap-4 mt-12 w-full justify-start max-md:justify-center"
           >
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-black font-extrabold text-sm shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-            >
-              Launch Sovereign Workspace <ArrowRight size={16} />
-            </Link>
+            <BeamButton href="/dashboard">
+              Initialize Workspace <ChevronRight size={16} className="text-black/80" />
+            </BeamButton>
 
             <a
               href="#visualizer"
@@ -91,15 +90,21 @@ export default function HeroSection() {
             className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 pt-8 border-t border-white/10 text-center"
           >
             <div>
-              <p className="text-xl sm:text-2xl font-black text-white tabular-nums">$42.8M+</p>
+              <p className="text-xl sm:text-2xl font-black text-white tabular-nums">
+                <RollingNumber end={42.8} decimals={1} prefix="₹" suffix="M+" />
+              </p>
               <p className="text-xs text-slate-400 mt-0.5">Assets Under Telemetry</p>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-black text-emerald-400 tabular-nums">&lt;45ms</p>
+              <p className="text-xl sm:text-2xl font-black text-emerald-400 tabular-nums">
+                <RollingNumber end={45} prefix="<" suffix="ms" />
+              </p>
               <p className="text-xs text-slate-400 mt-0.5">Real-Time Sync Latency</p>
             </div>
             <div>
-              <p className="text-xl sm:text-2xl font-black text-cyan-400 tabular-nums">99.98%</p>
+              <p className="text-xl sm:text-2xl font-black text-cyan-400 tabular-nums">
+                <RollingNumber end={99.98} decimals={2} suffix="%" />
+              </p>
               <p className="text-xs text-slate-400 mt-0.5">Model Reasoning Accuracy</p>
             </div>
             <div>

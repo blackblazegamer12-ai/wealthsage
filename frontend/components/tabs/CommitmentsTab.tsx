@@ -19,10 +19,11 @@ interface CommitmentsTabProps {
   onDeleteGoal: (id: string) => void;
   onOpenSubModal: (sub?: any) => void;
   onDeleteSub: (id: string) => void;
+  onLoadDemoData: () => void;
 }
 
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 function ProgressRing({ progress, color, size = 128 }: { progress: number; color: string; size?: number }) {
   const radius = 52;
@@ -67,7 +68,7 @@ const GoalCard = memo(function GoalCard({ goal, index, onEdit, onDelete }: GoalC
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.05 }}
-      className="royal-card rounded-3xl p-5 sm:p-6 lg:p-7 flex flex-col items-center text-center relative group"
+      className="glass-panel rounded-3xl p-5 sm:p-6 lg:p-7 flex flex-col items-center text-center relative group"
     >
       {/* Hover Actions */}
       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5 z-10">          <button
@@ -155,7 +156,7 @@ const SubscriptionRow = memo(function SubscriptionRow({ sub, onEdit, onDelete }:
 
       <div className="flex items-center gap-3 sm:gap-4">
         <p className="font-extrabold text-sm sm:text-base" style={{ color: 'var(--text-primary)' }}>
-          ${Number(sub.amount || 0).toFixed(2)}
+          ₹{Number(sub.amount || 0).toFixed(2)}
         </p>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
@@ -186,13 +187,9 @@ export default function CommitmentsTab({
   onOpenGoalModal,
   onDeleteGoal,
   onOpenSubModal,
-  onDeleteSub
+  onDeleteSub,
+  onLoadDemoData
 }: CommitmentsTabProps) {
-  const totalMonthlySubCost = subscriptions.reduce((sum, s) => sum + Number(s.amount || 0), 0);
-  const totalGoalSaved = goals.reduce((sum, g) => sum + Number(g.current || 0), 0);
-  const totalGoalTarget = goals.reduce((sum, g) => sum + Number(g.target || 0), 0);
-  const combinedRatio = totalGoalTarget > 0 ? Math.round((totalGoalSaved / totalGoalTarget) * 100) : 0;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -200,108 +197,124 @@ export default function CommitmentsTab({
       transition={{ duration: 0.3 }}
       className="space-y-10"
     >
-      {/* Header */}
       <div>
-        <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
-          Strategic Commitments & Targets
-        </span>
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-          Goals, Subscriptions & Zombie Killer
+          Goals, Subscriptions & Expense Optimizer
         </h1>
         <p className="mt-1.5 text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
-          Track wealth milestones, monitor recurring bills, and dispatch automated cancellation notices.
+          Track wealth milestones, monitor recurring bills, and optimize expenses.
         </p>
       </div>
 
-      {/* 1. FINANCIAL GOALS & TARGETS */}
+      {/* Financial Goals */}
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <Target className="text-[var(--accent-primary)]" size={20} /> Financial Goals & Targets
-            </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              {goals.length} active wealth milestones tracked
-            </p>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Target className="text-[var(--accent)]" size={20} />
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Financial Goals</h2>
           </div>
-
           <button
             type="button"
             onClick={() => onOpenGoalModal()}
-            className="royal-btn-accent px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
-            <Plus size={15} /> + Add Target
+            <Plus size={14} /> Add Goal
           </button>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
-          {goals.map((goal, index) => (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              index={index}
-              onEdit={onOpenGoalModal}
-              onDelete={onDeleteGoal}
-            />
-          ))}
-        </div>
-
-        {/* Combined Goal Buffer Card */}
-        <div className="mt-6 royal-card rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-[var(--border-royal)]">
-          <div>
-            <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Aggregated Milestone Velocity</h4>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Total accumulated capital: {formatCurrency(totalGoalSaved)} across {goals.length} wealth targets.
+        
+        {goals.length === 0 ? (
+          <div className="glass-panel p-8 md:p-12 rounded-3xl flex flex-col items-center justify-center text-center">
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-4 text-[var(--accent)]">
+              <Target size={24} />
+            </div>
+            <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-primary)' }}>No goals yet</h3>
+            <p className="text-xs max-w-sm mx-auto mb-6" style={{ color: 'var(--text-muted)' }}>
+              Set your first financial goal — like building an emergency fund or saving for a down payment.
             </p>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Total Target</span>
-              <p className="text-base font-extrabold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(totalGoalTarget)}</p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => onOpenGoalModal()}
+                className="px-5 py-2.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
+                style={{ backgroundColor: 'var(--accent)' }}
+              >
+                + Set Your First Goal
+              </button>
+              <button
+                type="button"
+                onClick={onLoadDemoData}
+                className="px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm hover:scale-[1.02]"
+                style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              >
+                Demo Data
+              </button>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Overall Ratio</span>
-              <p className="text-base font-extrabold text-[var(--accent-primary)]">{combinedRatio}%</p>
-            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {goals.map((goal, i) => (
+              <GoalCard key={goal.id} goal={goal} index={i} onEdit={onOpenGoalModal} onDelete={onDeleteGoal} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 2. RECURRING SUBSCRIPTIONS RADAR */}
+      {/* Recurring Expenses */}
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <CreditCard className="text-[#10B981]" size={20} /> Recurring Commitments Radar
-            </h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              ${totalMonthlySubCost.toFixed(2)}/mo total automated outflow ({subscriptions.length} active bills)
-            </p>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <CreditCard className="text-emerald-400" size={20} />
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Recurring Expenses</h2>
           </div>
-
           <button
             type="button"
             onClick={() => onOpenSubModal()}
-            className="px-4 py-2.5 rounded-2xl bg-[#10B981]/20 hover:bg-[#10B981]/30 text-[#10B981] border border-[#10B981]/40 text-xs font-bold transition-all flex items-center gap-1.5"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
-            <Plus size={15} /> + Add Bill
+            <Plus size={14} /> Add Expense
           </button>
         </div>
-
-        <div className="royal-card rounded-3xl overflow-hidden divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
-          {subscriptions.map((sub) => (
-            <SubscriptionRow
-              key={sub.id}
-              sub={sub}
-              onEdit={onOpenSubModal}
-              onDelete={onDeleteSub}
-            />
-          ))}
-        </div>
+        
+        {subscriptions.length === 0 ? (
+          <div className="glass-panel p-8 md:p-12 rounded-3xl flex flex-col items-center justify-center text-center">
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 mb-4 text-emerald-400">
+              <CreditCard size={24} />
+            </div>
+            <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-primary)' }}>No recurring expenses tracked</h3>
+            <p className="text-xs max-w-sm mx-auto mb-6" style={{ color: 'var(--text-muted)' }}>
+              Add your monthly bills, subscriptions, or software costs to monitor your burn rate.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => onOpenSubModal()}
+                className="px-5 py-2.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
+                style={{ backgroundColor: 'var(--accent)' }}
+              >
+                + Add Expense
+              </button>
+              <button
+                type="button"
+                onClick={onLoadDemoData}
+                className="px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm hover:scale-[1.02]"
+                style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+              >
+                Demo Data
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="glass-panel rounded-3xl divide-y divide-[var(--border-subtle)] overflow-hidden" style={{ border: '1px solid var(--border-royal)' }}>
+            {subscriptions.map((sub) => (
+              <SubscriptionRow key={sub.id} sub={sub} onEdit={onOpenSubModal} onDelete={onDeleteSub} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 3. ZOMBIE SUBSCRIPTION KILLER */}
-      <ZombieSubKiller />
+      <ZombieSubKiller userSubscriptions={subscriptions} />
     </motion.div>
   );
 }

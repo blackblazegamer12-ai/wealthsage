@@ -133,7 +133,7 @@ export default function SubscriptionModal({
               <button 
                 type="button"
                 onClick={onSave}
-                className="flex-1 px-4 py-3 rounded-xl royal-btn-accent text-xs font-bold transition-all shadow-lg"
+                className="flex-1 px-4 py-3 rounded-xl btn-brass text-xs font-bold transition-all shadow-lg"
               >
                 {editingSub ? 'Update Bill' : 'Save Bill'}
               </button>

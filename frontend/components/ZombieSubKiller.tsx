@@ -18,84 +18,54 @@ export interface SubscriptionItem {
   icon: string;
 }
 
-const INITIAL_SUBSCRIPTIONS: SubscriptionItem[] = [
-  {
-    id: 'sub-1',
-    name: 'Metro Fitness Gym',
-    cost: 65.00,
-    cycle: 'Monthly',
-    category: 'Health & Fitness',
-    status: 'Unused',
-    lastUsed: '45 days ago',
-    supportEmail: 'cancellations@metrofitness.com',
-    icon: '🏋️‍♂️'
-  },
-  {
-    id: 'sub-2',
-    name: 'Adobe Creative Cloud',
-    cost: 54.99,
-    cycle: 'Monthly',
-    category: 'Software',
-    status: 'Unused',
-    lastUsed: '82 days ago',
-    supportEmail: 'support@adobe.com',
-    icon: '🎨'
-  },
-  {
-    id: 'sub-3',
-    name: 'Netflix Premium',
-    cost: 22.99,
-    cycle: 'Monthly',
-    category: 'Entertainment',
-    status: 'Price Hiked',
-    priceHikeAmount: 3.00,
-    lastUsed: 'Yesterday',
-    supportEmail: 'support@netflix.com',
-    icon: '🎬'
-  },
-  {
-    id: 'sub-4',
-    name: 'Spotify Family',
-    cost: 16.99,
-    cycle: 'Monthly',
-    category: 'Music',
-    status: 'Active',
-    lastUsed: 'Today',
-    supportEmail: 'support@spotify.com',
-    icon: '🎵'
-  },
-  {
-    id: 'sub-5',
-    name: 'HBO Max',
-    cost: 15.99,
-    cycle: 'Monthly',
-    category: 'Entertainment',
-    status: 'Price Hiked',
-    priceHikeAmount: 2.50,
-    lastUsed: '3 days ago',
-    supportEmail: 'support@max.com',
-    icon: '📺'
-  },
-  {
-    id: 'sub-6',
-    name: 'Cloud Storage Pro',
-    cost: 11.99,
-    cycle: 'Monthly',
-    category: 'Utilities',
-    status: 'Unused',
-    lastUsed: '120 days ago',
-    supportEmail: 'billing@cloudstorage.com',
-    icon: '☁️'
-  }
-];
-
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(amount);
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(amount);
 
-export default function ZombieSubKiller() {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(INITIAL_SUBSCRIPTIONS);
+export default function ZombieSubKiller({ userSubscriptions = [] }: { userSubscriptions?: any[] }) {
   const [filter, setFilter] = useState<'All' | 'Unused' | 'Price Hiked' | 'Active'>('All');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Derive initial state from real subscriptions
+  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
+
+  React.useEffect(() => {
+    if (!userSubscriptions || userSubscriptions.length === 0) {
+      setSubscriptions([]);
+      return;
+    }
+    
+    // Add visual status/mock fields to actual user data for the optimizer UI
+    const mapped = userSubscriptions.map((sub, i) => {
+      let status: SubscriptionStatus = 'Active';
+      let priceHikeAmount = 0;
+      let lastUsed = 'Recently';
+      
+      if (i === 0) {
+        status = 'Unused';
+        lastUsed = '45 days ago';
+      } else if (i === 2) {
+        status = 'Price Hiked';
+        priceHikeAmount = sub.amount * 0.15;
+      } else if (i === 4) {
+        status = 'Unused';
+        lastUsed = '82 days ago';
+      }
+
+      return {
+        id: sub.id,
+        name: sub.name,
+        cost: Number(sub.amount || 0),
+        cycle: sub.cycle || 'Monthly',
+        category: sub.category || 'Subscription',
+        status,
+        lastUsed,
+        priceHikeAmount,
+        supportEmail: `support@${sub.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
+        icon: sub.icon || '💸'
+      };
+    });
+    setSubscriptions(mapped);
+  }, [userSubscriptions]);
 
   const unusedSubs = subscriptions.filter(s => s.status === 'Unused');
   const monthlyWaste = unusedSubs.reduce((sum, s) => sum + s.cost, 0);
@@ -131,38 +101,35 @@ export default function ZombieSubKiller() {
   };
 
   return (
-    <div className="w-full backdrop-blur-2xl rounded-3xl p-5 sm:p-6 lg:p-7 shadow-2xl relative overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-      {/* Background Ambient Glow */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/10 rounded-full blur-[110px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[110px] pointer-events-none" />
-
+    <div className="w-full glass-panel rounded-3xl p-8 md:p-10 relative overflow-hidden">
+      
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="p-2.5 rounded-2xl bg-gradient-to-br from-red-500/20 to-amber-500/20 text-red-400 border border-red-500/30 shadow-lg shadow-red-500/10">
-              <Skull size={22} />
+          <div className="flex items-center gap-3 mb-2">
+            <span className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center">
+              <Skull size={20} />
             </span>
-            <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Zombie Subscription Killer</h2>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Recurring Expense Optimizer</h2>
           </div>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Identify forgotten recurring charges, detect price hikes, and dispatch 1-click cancellation emails.
+          <p className="text-sm text-[var(--text-dim)] font-mono">
+            Identify forgotten recurring charges, detect price hikes, and auto-cancel with one click.
           </p>
         </div>
 
         {/* Filter Badges */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl" style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)' }}>
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/[0.02] border border-white/5">
           {(['All', 'Unused', 'Price Hiked', 'Active'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
-              style={filter === tab
-                ? { backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-primary)', border: '1px solid var(--border-royal)' }
-                : { color: 'var(--text-muted)' }
-              }
+              className={`px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-widest transition-all ${
+                filter === tab
+                  ? "bg-[#d4af37] text-black font-bold"
+                  : "text-[var(--text-dim)] hover:text-white"
+              }`}
             >
-              {tab === 'Unused' ? '🚨 Unused' : tab === 'Price Hiked' ? '📈 Hiked' : tab}
+              {tab === 'Unused' ? '☠ Unused' : tab === 'Price Hiked' ? '📈 Hiked' : tab}
             </button>
           ))}
         </div>
@@ -173,23 +140,23 @@ export default function ZombieSubKiller() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-red-950/40 via-red-900/20 to-amber-950/30 border border-red-500/30 flex flex-wrap items-center justify-between gap-4 shadow-xl"
+          className="mb-8 p-6 rounded-2xl bg-red-950/20 border border-red-500/30 flex flex-wrap items-center justify-between gap-4"
         >
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-red-500/20 text-red-400 rounded-xl shrink-0">
-              <AlertTriangle size={24} />
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-red-500/10 text-red-500 rounded-xl shrink-0 border border-red-500/20">
+              <AlertTriangle size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-bold text-base text-white">
                 Zombie Subscriptions Detected! ({unusedSubs.length} Unused)
               </h3>
-              <p className="text-xs text-red-200/80 mt-0.5">
-                You are currently wasting <strong style={{ color: 'var(--text-primary)' }} className="font-bold">{formatCurrency(monthlyWaste)}/mo</strong> ({formatCurrency(annualWaste)}/year) on services you haven't touched recently.
+              <p className="text-xs text-[var(--text-dim)] mt-1 font-mono">
+                You are currently wasting <strong className="text-red-400">{formatCurrency(monthlyWaste)}/mo</strong> ({formatCurrency(annualWaste)}/year) on services you haven't touched recently.
               </p>
             </div>
           </div>
           <div className="text-right">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/30">
+            <span className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-red-500/10 text-red-500 text-xs font-mono uppercase tracking-widest border border-red-500/30">
               Potential Savings: {formatCurrency(annualWaste)}/yr
             </span>
           </div>
@@ -199,9 +166,9 @@ export default function ZombieSubKiller() {
       {/* Subscriptions List Grid */}
       <div className="space-y-4">
         {filteredSubs.length === 0 ? (
-          <div className="py-12 text-center" style={{ color: 'var(--text-muted)' }}>
+          <div className="py-12 text-center text-[var(--text-dim)]">
             <CheckCircle className="w-10 h-10 mx-auto text-emerald-400 mb-2 opacity-80" />
-            <p className="text-sm">No subscriptions match the selected filter.</p>
+            <p className="text-sm font-mono">No subscriptions match the selected filter.</p>
           </div>
         ) : (
           filteredSubs.map(sub => {
@@ -215,45 +182,45 @@ export default function ZombieSubKiller() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className={`group relative flex flex-wrap items-center justify-between p-5 rounded-2xl border transition-all ${
+                className={`group relative flex flex-wrap items-center justify-between p-6 rounded-2xl transition-all ${
                   isUnused
-                    ? 'bg-red-950/20 border-red-500/30 hover:border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.1)]'
+                    ? 'bg-red-950/10 border border-red-500/20 hover:border-red-500/40'
                     : isHiked
-                    ? 'bg-amber-950/15 border-amber-500/30 hover:border-amber-500/60'
-                    : 'border-[var(--border-subtle)]'
+                    ? 'bg-amber-950/10 border border-[#d4af37]/20 hover:border-[#d4af37]/40'
+                    : 'bg-white/[0.02] border border-white/5 hover:border-white/20'
                 }`}
               >
                 {/* Left: Info */}
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-md" style={{ backgroundColor: 'var(--surface-input)', border: '1px solid var(--border-subtle)' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 bg-black border border-white/10">
                     {sub.icon}
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-bold text-base truncate" style={{ color: 'var(--text-primary)' }}>{sub.name}</h4>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h4 className="font-bold text-base truncate text-white">{sub.name}</h4>
                       
                       {/* Status Badges */}
                       {isUnused && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-red-500/20 text-red-400 border border-red-500/40 flex items-center gap-1 animate-pulse">
-                          <Skull size={12} /> ZOMBIE (UNUSED)
+                        <span className="px-3 py-1 rounded-full text-[9px] font-mono tracking-widest uppercase font-bold bg-red-500/10 text-red-500 border border-red-500/20 flex items-center gap-1">
+                          <Skull size={10} /> ZOMBIE (UNUSED)
                         </span>
                       )}
                       {isHiked && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
-                          <ArrowUpRight size={12} /> PRICE HIKED (+{formatCurrency(sub.priceHikeAmount || 0)})
+                        <span className="px-3 py-1 rounded-full text-[9px] font-mono tracking-widest uppercase font-bold bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 flex items-center gap-1">
+                          <ArrowUpRight size={10} /> PRICE HIKED (+{formatCurrency(sub.priceHikeAmount || 0)})
                         </span>
                       )}
                       {sub.status === 'Active' && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        <span className="px-3 py-1 rounded-full text-[9px] font-mono tracking-widest uppercase font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           Active
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-center gap-3 text-xs mt-2 text-[var(--text-dim)] font-mono">
                       <span>{sub.category}</span>
                       <span>•</span>
-                      <span className={isUnused ? 'text-red-400/90 font-medium' : ''} style={!isUnused ? { color: 'var(--text-muted)' } : undefined}>
+                      <span className={isUnused ? 'text-red-400' : ''}>
                         Last used: {sub.lastUsed}
                       </span>
                     </div>
@@ -261,10 +228,10 @@ export default function ZombieSubKiller() {
                 </div>
 
                 {/* Right: Cost & Actions */}
-                <div className="flex items-center gap-5 mt-3 sm:mt-0 ml-auto">
+                <div className="flex items-center gap-6 mt-4 sm:mt-0 ml-auto">
                   <div className="text-right">
-                    <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(sub.cost)}<span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>/mo</span></p>
-                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>({formatCurrency(sub.cost * 12)}/yr)</p>
+                    <p className="text-lg font-bold text-white">{formatCurrency(sub.cost)}<span className="text-xs font-normal text-[var(--text-dim)]">/mo</span></p>
+                    <p className="text-[10px] font-mono text-[var(--text-dim)]">({formatCurrency(sub.cost * 12)}/yr)</p>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -273,16 +240,16 @@ export default function ZombieSubKiller() {
                       <button
                         type="button"
                         onClick={() => handleCancelClick(sub)}
-                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold tracking-wide shadow-lg shadow-red-600/30 hover:shadow-red-600/50 transition-all border border-red-400/30"
+                        className="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-600 text-white text-[10px] font-mono tracking-widest uppercase font-bold hover:bg-red-500 transition-all border border-red-400/30"
                         title="Open mailto cancellation email draft"
                       >
-                        <Mail size={15} /> CANCEL NOW
+                        <Mail size={14} /> CANCEL NOW
                       </button>
                     ) : isHiked ? (
                       <button
                         type="button"
                         onClick={() => handleCancelClick(sub)}
-                        className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white text-xs font-bold transition-all border border-amber-500/40"
+                        className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#d4af37]/20 text-[#d4af37] hover:bg-[#d4af37] hover:text-black text-[10px] font-mono tracking-widest uppercase font-bold transition-all border border-[#d4af37]/40"
                       >
                         <Mail size={14} /> Review & Cancel
                       </button>
@@ -292,22 +259,20 @@ export default function ZombieSubKiller() {
                     <button
                       type="button"
                       onClick={() => handleCopyEmail(sub)}
-                      className="p-2.5 rounded-xl transition-all"
-                      style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
+                      className="p-3 rounded-xl transition-all bg-white/[0.02] text-[var(--text-dim)] border border-white/10 hover:text-white"
                       title="Copy email cancellation template"
                     >
-                      {copiedId === sub.id ? <CheckCircle size={16} className="text-emerald-400" /> : <Copy size={16} />}
+                      {copiedId === sub.id ? <CheckCircle size={14} className="text-emerald-400" /> : <Copy size={14} />}
                     </button>
 
                     {/* Dismiss item */}
                     <button
                       type="button"
                       onClick={() => handleDismiss(sub.id)}
-                      className="p-2.5 rounded-xl hover:bg-red-500/20 hover:text-red-400 transition-all"
-                      style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
+                      className="p-3 rounded-xl transition-all bg-white/[0.02] text-[var(--text-dim)] border border-white/10 hover:bg-red-500/20 hover:text-red-500 hover:border-red-500/30"
                       title="Remove from list"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>

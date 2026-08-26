@@ -151,17 +151,17 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
         months = 60
         r_m = rate / 12
         future_val = surplus * (((1 + r_m)**months - 1) / r_m)
-        formatted_val = f"${future_val:,.2f}"
+        formatted_val = f"₹{future_val:,.2f}"
 
         reply = (
             f"### Autonomous 5-Year Compounding Projection\n\n"
-            f"Based on your current net monthly retained surplus of **${surplus:,.2f}**, "
+            f"Based on your current net monthly retained surplus of **₹{surplus:,.2f}**, "
             f"the hyperbolic compounding trajectory over a 5-year horizon ($t = 5\\text{{ years}}$, $n = 12$) "
             f"at an estimated annual rate of $r = 8\\%$ yields:\n\n"
             f"$$A(t) = S \\times \\frac{{(1 + r/n)^{{nt}} - 1}}{{r/n}} = {formatted_val}$$\n\n"
             f"**Quantitative Breakdown:**\n"
-            f"- **Cumulative Principal Saved**: ${surplus * 60:,.2f}\n"
-            f"- **Projected Compound Interest Alpha**: ${future_val - (surplus * 60):,.2f}\n"
+            f"- **Cumulative Principal Saved**: ₹{surplus * 60:,.2f}\n"
+            f"- **Projected Compound Interest Alpha**: ₹{future_val - (surplus * 60):,.2f}\n"
             f"- **Compound Acceleration Index**: +24.8% APY Surplus Velocity\n\n"
             f"**Recommendation**: Reallocate at least 40% of this monthly surplus into automated broad-market indexing to capture this trajectory."
         )
@@ -179,12 +179,12 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
 
         reply = (
             f"### Deep Cash Flow & Outflow Leak Audit\n\n"
-            f"I analyzed your active ledger telemetry. Outflows total **${expense:,.2f}/month** against revenue of **${income:,.2f}/month**.\n\n"
+            f"I analyzed your active ledger telemetry. Outflows total **₹{expense:,.2f}/month** against revenue of **₹{income:,.2f}/month**.\n\n"
             f"**Primary Leak Vectors Identified:**\n"
-            f"1. **Highest Concentration Category**: `{top_cat}` totaling **${top_amt:,.2f}**.\n"
+            f"1. **Highest Concentration Category**: `{top_cat}` totaling **₹{top_amt:,.2f}**.\n"
             f"2. **Unused Recurring Subscriptions**: Flagged dormant recurring items contributing to creeping leakage.\n\n"
             f"$$\\text{{Score}}_{{\\text{{leak}}}} = \\frac{{\\Delta t}}{{\\text{{30}}}} \\times \\text{{Cost}} = {top_amt * 1.25:,.2f}$$\n\n"
-            f"**Remediation**: Execute automated subscription pruning to recover an estimated **$182/month** ($2,184/year)."
+            f"**Remediation**: Execute automated subscription pruning to recover an estimated **₹1,820/month** (₹21,840/year)."
         )
         return {"reply": reply, "has_updates": False, "updates": []}
 
@@ -199,16 +199,16 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
             f"Evaluating your capital preservation baseline under a zero-income scenario:\n\n"
             f"$$\\text{{Runway}}_{{\\text{{months}}}} = \\frac{{\\text{{Reserves}}}}{{\\mu_{{\\text{{burn}}}} \\times (1 + \\sigma_{{\\text{{vol}}}})}} = {runway_m} \\text{{ months}}$$\n\n"
             f"**Telemetry Summary:**\n"
-            f"- **Estimated Cash Reserves**: ${est_reserve:,.2f}\n"
-            f"- **Adjusted Monthly Burn Rate**: ${monthly_burn:,.2f}/month\n"
+            f"- **Estimated Cash Reserves**: ₹{est_reserve:,.2f}\n"
+            f"- **Adjusted Monthly Burn Rate**: ₹{monthly_burn:,.2f}/month\n"
             f"- **Zero-Income Survival Runway**: **{runway_m} Months**\n\n"
             f"**Status**: {'Optimal Safeguard (>6 Months)' if runway_m >= 6 else 'Warning (Below 6 Month Safeguard)'}."
         )
         return {"reply": reply, "has_updates": False, "updates": []}
 
     # 4. Log Expense/Income Intent
-    elif any(k in query_lower for k in ["log", "expense", "spend", "bought", "spent", "$"]):
-        amount_match = re.search(r"\$\s*(\d+(?:\.\d{1,2})?)", user_query) or re.search(r"(\d+(?:\.\d{1,2})?)\s*(?:dollars|usd|\$)", user_query)
+    elif any(k in query_lower for k in ["log", "expense", "spend", "bought", "spent", "₹", "rupee"]):
+        amount_match = re.search(r"₹\s*(\d+(?:\.\d{1,2})?)", user_query) or re.search(r"(\d+(?:\.\d{1,2})?)\s*(?:rupees|inr|₹)", user_query)
         amount = float(amount_match.group(1)) if amount_match else 45.0
 
         if "grocery" in query_lower or "whole foods" in query_lower or "food" in query_lower:
@@ -221,7 +221,7 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
             item_name = "General Expense Log"
             category = "Miscellaneous"
 
-        reply = f"Successfully logged expense of **${amount:,.2f}** under category `{category}`. Your sovereign ledger telemetry has been updated in real time."
+        reply = f"Successfully logged expense of **₹{amount:,.2f}** under category `{category}`. Your sovereign ledger telemetry has been updated in real time."
         return {
             "reply": reply,
             "has_updates": True,
@@ -236,14 +236,14 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
 
     # 5. Rebalance / Investment SIP Intent
     elif any(k in query_lower for k in ["rebalance", "sip", "index", "invest"]):
-        amount_match = re.search(r"\$\s*(\d+(?:\.\d{1,2})?)", user_query) or re.search(r"(\d+k)", query_lower)
-        amount = 2000.0
+        amount_match = re.search(r"₹\s*(\d+(?:\.\d{1,2})?)", user_query) or re.search(r"(\d+k)", query_lower)
+        amount = 15000.0
         if amount_match:
             val_str = amount_match.group(1).replace("k", "000")
             try: amount = float(val_str)
             except: pass
 
-        reply = f"Logged automated SIP investment allocation of **${amount:,.2f}/month** into `Broad Equity Index (VOO/VTI)`."
+        reply = f"Logged automated SIP investment allocation of **₹{amount:,.2f}/month** into `Broad Equity Index (NIFTY/SENSEX)`."
         return {
             "reply": reply,
             "has_updates": True,
@@ -269,9 +269,9 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
         f"### Sovereign Financial Synthesis\n\n"
         f"Analyzing query: *\"{user_query}\"*\n\n"
         f"**Active Ledger Summary:**\n"
-        f"- **Monthly Inflow**: ${income:,.2f}\n"
-        f"- **Monthly Outflow**: ${expense:,.2f}\n"
-        f"- **Net Retained Surplus**: ${net_surplus:,.2f}\n\n"
+        f"- **Monthly Inflow**: ₹{income:,.2f}\n"
+        f"- **Monthly Outflow**: ₹{expense:,.2f}\n"
+        f"- **Net Retained Surplus**: ₹{net_surplus:,.2f}\n\n"
         f"$$\\text{{Velocity}}_{{\\text{{wealth}}}} = \\frac{{\\text{{Net Surplus}}}}{{\\text{{Inflow}}}} = {f'{round(net_surplus/income*100, 1)}%' if income > 0 else '0%'}$$\n\n"
         f"You can ask me to **forecast 5-year compounding trajectories**, **audit cash leaks**, **evaluate zero-income runway**, or **log transactions**."
     )
@@ -296,15 +296,20 @@ def process_financial_chat(
         return _deterministic_offline_chat(user_query, current_transactions)
 
     system_prompt = f"""
-You are WealthSage, an elite autonomous financial AI and quantitative wealth architect.
-You are a mathematical reasoning engine with full CRUD access to the user's financial dashboard. 
-Respond strictly in valid JSON format.
+You are WealthSage Mirror, an elite, highly intelligent, and effortlessly cool personal wealth companion. 
+Your tone should feel like a brilliant private wealth manager who is also a close friend—conversational, warm, sharp, and concise.
 
 CURRENT LEDGER:
 {json.dumps(current_transactions)}
 
+RULES FOR RESPONSES:
+1. **Match the Vibe:** If the user says "hi" or casual chat, respond warmly with casual energy and an emoji. Never give a stiff robotic answer to a casual greeting.
+2. **Use Emojis Naturally:** Sprinkle relevant emojis (✨, 🚀, 💡, 🛡️, 📈) to make the text visually engaging and human.
+3. **Never Dump Raw Markdown Tables:** If showing financial projections, format them into clean, easy-to-read bullet points with bold highlights instead of broken markdown code or raw LaTeX strings.
+4. **Be Proactive:** Always end with a helpful, conversational follow-up question or a quick action suggestion.
+
 DIRECTIVES:
-1. Mathematical Autonomy: Accurately calculate totals and LaTeX formulas ($E=mc^2$ or $$A(t) = P(1+r/n)^{{nt}}$$). Do NOT place English sentences inside dollar signs.
+1. Mathematical Autonomy: Accurately calculate totals and percentages.
 2. Holistic Wealth Tracking:
    - "Net Worth" updates log as massive "income" transactions or capital corrections.
    - Recurring investments/SIPs log as Monthly Subscriptions.
@@ -316,8 +321,9 @@ DIRECTIVES:
    - "reset": To wipe the ENTIRE ledger clean. Use ONLY when the user explicitly asks to reset ALL transactions.
 
 RESPONSE FORMAT:
+Respond strictly in valid JSON format:
 {{
-    "reply": "Clear, concise financial reasoning formatted in Markdown with LaTeX formulas.",
+    "reply": "Your conversational response here.",
     "has_updates": false,
     "updates": []
 }}
@@ -363,6 +369,24 @@ def generate_executive_briefing(
     net_surplus = income - expense
     savings_rate = f"{round(((income - expense) / income * 100), 1)}%" if income > 0 else "0%"
     
+    # Strictly handle empty ledger to prevent AI hallucinations
+    if not transactions:
+        return {
+            "wealth_velocity_score": 0,
+            "velocity_tier": "Awaiting Data",
+            "monthly_runway_months": 0,
+            "top_leak_category": "N/A",
+            "savings_rate_pct": "0%",
+            "net_monthly_surplus": 0,
+            "headline": "Ledger is currently empty. Initialize your financial telemetry to begin.",
+            "key_insights": [
+                "No income or expense records found.",
+                "Log your first transaction or load demo data to activate analytics.",
+                "Compounding engine requires baseline liquidity data."
+            ],
+            "tactical_action": "Log an initial income source or synchronize your bank accounts."
+        }
+    
     cat_spend: Dict[str, float] = {}
     for t in transactions:
         if t.get('type') == 'expense':
@@ -395,11 +419,11 @@ def generate_executive_briefing(
         "net_monthly_surplus": max(0, int(round(net_surplus))),
         "headline": f"Cash flow velocity is {tier.lower()} with {savings_rate} retention capacity.",
         "key_insights": [
-            f"Monthly revenue of ${income:,.0f} generates a positive net surplus of ${net_surplus:,.0f}.",
-            f"Highest expense concentration detected in '{top_leak}' totaling ${cat_spend.get(top_leak, 0):,.0f}.",
-            f"Active recurring commitments represent ${sub_total:,.0f}/month."
+            f"Monthly revenue of ₹{income:,.0f} generates a positive net surplus of ₹{net_surplus:,.0f}.",
+            f"Highest expense concentration detected in '{top_leak}' totaling ₹{cat_spend.get(top_leak, 0):,.0f}.",
+            f"Active recurring commitments represent ₹{sub_total:,.0f}/month."
         ],
-        "tactical_action": f"Automate reallocation of ${max(500, int(net_surplus * 0.4)):,.0f} monthly surplus into high-yield indexing."
+        "tactical_action": f"Automate reallocation of ₹{max(5000, int(net_surplus * 0.4)):,.0f} monthly surplus into high-yield indexing."
     }
 
     client, mode = get_ai_client()
@@ -411,9 +435,9 @@ You are the WealthSage Chief AI Strategist. Perform an executive quantitative br
 Respond STRICTLY with valid JSON.
 
 LEDGER DATA:
-Income: ${income:,.2f} | Expense: ${expense:,.2f} | Net Surplus: ${net_surplus:,.2f}
+Income: ₹{income:,.2f} | Expense: ₹{expense:,.2f} | Net Surplus: ₹{net_surplus:,.2f}
 Top Expense Categories: {json.dumps(cat_spend)}
-Active Subscriptions: {len(subscriptions)} items (${sub_total:,.2f}/mo)
+Active Subscriptions: {len(subscriptions)} items (₹{sub_total:,.2f}/mo)
 Goals: {json.dumps(goals)}
 
 REQUIRED JSON FORMAT:
@@ -454,7 +478,7 @@ def generate_financial_audit(transactions: list) -> dict:
     fallback = {
         "alert_level": alert,
         "savings_rate_percentage": savings_rate,
-        "report": f"### Comprehensive Financial Audit\n\n**Net Status**: {alert}\n**Savings Velocity**: {savings_rate}\n\nLedger analysis of {len(transactions)} transactions confirms total monthly revenue of ${income:,.2f} versus outflows of ${expense:,.2f}."
+        "report": f"### Comprehensive Financial Audit\n\n**Net Status**: {alert}\n**Savings Velocity**: {savings_rate}\n\nLedger analysis of {len(transactions)} transactions confirms total monthly revenue of ₹{income:,.2f} versus outflows of ₹{expense:,.2f}."
     }
 
     client, mode = get_ai_client()

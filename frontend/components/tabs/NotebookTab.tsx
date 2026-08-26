@@ -55,11 +55,11 @@ export default function NotebookTab({
 
       <div className="flex flex-col lg:flex-row h-[calc(100vh-220px)] min-h-[600px] gap-6">
         {/* Left Column: Note List */}
-        <div className="w-full lg:w-1/4 royal-card rounded-3xl p-5 flex flex-col overflow-hidden">
+        <div className="w-full lg:w-1/4 glass-panel rounded-3xl p-5 flex flex-col overflow-hidden">
           <button
             type="button"
             onClick={onCreateNewNote}
-            className="w-full royal-btn-accent py-3 rounded-2xl mb-4 font-bold transition-all text-xs flex items-center justify-center gap-1.5"
+            className="w-full btn-brass py-3 rounded-2xl mb-4 font-bold transition-all text-xs flex items-center justify-center gap-1.5"
           >
             <Plus size={15} /> New Research Note
           </button>
@@ -89,7 +89,7 @@ export default function NotebookTab({
 
         {/* Middle Column: Raw Markdown Editor */}
         <div className="w-full lg:w-1/3 flex flex-col gap-4">
-          <div className="flex items-center gap-2 royal-card p-3 rounded-2xl">
+          <div className="flex items-center gap-2 glass-panel p-3 rounded-2xl">
             <input
               type="text"
               value={noteTitle}
@@ -122,13 +122,13 @@ export default function NotebookTab({
             value={noteContent}
             onChange={(e) => setNoteContent(e.target.value)}
             placeholder="Document financial logic in Markdown. Use $ for inline math ($E=mc^2$) and $$ for block math ($$A = P(1 + r/n)^{nt}$$)..."
-            className="flex-1 royal-card rounded-3xl p-6 font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)] resize-none leading-relaxed"
+            className="flex-1 glass-panel rounded-3xl p-6 font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)] resize-none leading-relaxed"
             style={{ color: 'var(--text-secondary)' }}
           />
         </div>
 
         {/* Right Column: Live Rendered Output */}
-        <div className="w-full lg:w-5/12 royal-card rounded-3xl p-6 sm:p-8 overflow-y-auto prose max-w-none" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-royal)' }}>
+        <div className="w-full lg:w-5/12 glass-panel rounded-3xl p-6 sm:p-8 overflow-y-auto prose max-w-none" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-royal)' }}>
           {noteContent ? (
             <ReactMarkdown
               remarkPlugins={[remarkMath]}

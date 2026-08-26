@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight, ShieldCheck, Zap, Lock } from "lucide-react";
+import BeamButton from "./BeamButton";
 
 export default function FinalCtaSection() {
   return (
@@ -28,12 +29,9 @@ export default function FinalCtaSection() {
 
           {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-black font-extrabold text-sm shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-            >
-              Launch Sovereign Workspace Now <ArrowRight size={16} />
-            </Link>
+            <BeamButton href="/dashboard">
+              Launch Sovereign Workspace Now <ArrowRight size={16} className="text-black/80" />
+            </BeamButton>
 
             <Link
               href="/sign-in"

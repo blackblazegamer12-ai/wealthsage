@@ -3,12 +3,10 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 
 export type RoyalThemeId =
-  | "imperial-gold"
-  | "emerald-sovereign"
-  | "regal-burgundy"
-  | "platinum-obsidian"
-  | "ethereal-cream"
-  | "sage-harmony";
+  | "echoid"
+  | "sapphire"
+  | "obsidian"
+  | "titanium";
 
 export type ThemeMode = "light" | "dark";
 
@@ -25,64 +23,44 @@ export interface RoyalThemeInfo {
 
 export const ROYAL_THEMES: RoyalThemeInfo[] = [
   {
-    id: "imperial-gold",
-    name: "Imperial Gold",
-    subtitle: "Obsidian Charcoal & Luminous Gold",
-    accentColor: "#EAB308",
-    previewGradient: "from-[#FACC15] to-[#CA8A04]",
-    badge: "Monarch Standard",
-    crownEmoji: "👑",
+    id: "echoid" as RoyalThemeId,
+    name: "ECHOID Obsidian & Brass",
+    subtitle: "Pitch Black & Warm Brass",
+    accentColor: "#B48A5A",
+    previewGradient: "from-[#B48A5A] to-[#E5C158]",
+    badge: "Flagship Default",
+    crownEmoji: "⚡",
     mode: "dark",
   },
   {
-    id: "emerald-sovereign",
-    name: "Emerald Sovereign",
-    subtitle: "Deep Velvet Forest & Radiant Emerald",
+    id: "sapphire" as RoyalThemeId,
+    name: "Midnight Sapphire",
+    subtitle: "Deep Navy & Translucent Sapphire",
+    accentColor: "#B48A5A",
+    previewGradient: "from-[#1E3A8A] to-[#3B82F6]",
+    badge: "Executive Class",
+    crownEmoji: "💎",
+    mode: "dark",
+  },
+  {
+    id: "obsidian" as RoyalThemeId,
+    name: "Obsidian & Emerald",
+    subtitle: "Pitch Black & Electric Emerald",
     accentColor: "#10B981",
-    previewGradient: "from-[#34D399] to-[#059669]",
-    badge: "Dynasty Guard",
-    crownEmoji: "🌿",
+    previewGradient: "from-[#10B981] to-[#34D399]",
+    badge: "Quant Mode",
+    crownEmoji: "📈",
     mode: "dark",
   },
   {
-    id: "regal-burgundy",
-    name: "Regal Burgundy",
-    subtitle: "Deep Wine Crimson & Rose Gold",
-    accentColor: "#F43F5E",
-    previewGradient: "from-[#FB7185] to-[#E11D48]",
-    badge: "Imperial Velvet",
-    crownEmoji: "♦️",
+    id: "titanium" as RoyalThemeId,
+    name: "Titanium & Frost",
+    subtitle: "Machined Metal & Silver",
+    accentColor: "#9CA3AF",
+    previewGradient: "from-[#9CA3AF] to-[#E5E7EB]",
+    badge: "Minimalist",
+    crownEmoji: "⚙️",
     mode: "dark",
-  },
-  {
-    id: "platinum-obsidian",
-    name: "Platinum Obsidian",
-    subtitle: "Midnight Slate & Starlight Platinum",
-    accentColor: "#38BDF8",
-    previewGradient: "from-[#E2E8F0] to-[#38BDF8]",
-    badge: "Celestial Order",
-    crownEmoji: "✦",
-    mode: "dark",
-  },
-  {
-    id: "ethereal-cream",
-    name: "Ethereal Cream",
-    subtitle: "Soft Cream & Amethyst Clarity",
-    accentColor: "#7C3AED",
-    previewGradient: "from-[#9580c4] to-[#7c6daa]",
-    badge: "Daylight Edition",
-    crownEmoji: "☀️",
-    mode: "light",
-  },
-  {
-    id: "sage-harmony",
-    name: "Sage Harmony",
-    subtitle: "Quiet Sage & Evergreen Balance",
-    accentColor: "#059669",
-    previewGradient: "from-[#6dae91] to-[#5a9a7e]",
-    badge: "Calm Focus",
-    crownEmoji: "🍃",
-    mode: "light",
   },
 ];
 
@@ -110,12 +88,12 @@ function applyThemeToDOM(themeId: RoyalThemeId) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<RoyalThemeId>(() => {
-    if (typeof window === "undefined") return "imperial-gold";
+    if (typeof window === "undefined") return "echoid";
     try {
       const stored = localStorage.getItem("wealthsage_royal_theme") as RoyalThemeId | null;
-      return stored && ROYAL_THEMES.some((item) => item.id === stored) ? stored : "imperial-gold";
+      return stored && ROYAL_THEMES.some((item) => item.id === stored) ? stored : "echoid";
     } catch {
-      return "imperial-gold";
+      return "echoid";
     }
   });
 

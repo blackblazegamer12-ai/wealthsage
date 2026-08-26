@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   BarChart3,
@@ -12,28 +11,24 @@ import {
   BookOpen,
   Settings,
   Sparkles,
-  Crown,
-  LogOut,
-  LogIn,
   Command,
   Plus,
   ShieldAlert,
   Palette,
   Bell,
   FileCheck2,
-  Lock,
   ArrowLeft
 } from "lucide-react";
-import { useUser, useClerk, UserButton } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 import { createClient } from "@supabase/supabase-js";
 
 // Modals & Drawers
-import TransactionModal from "../../components/TransactionModal";
+import FastCaptureModal from "../../components/modals/FastCaptureModal";
 import AuditModal from "../../components/AuditModal";
 import GoalModal from "../../components/GoalModal";
 import SubscriptionModal from "../../components/SubscriptionModal";
 import ThemeSelectorModal from "../../components/theme/ThemeSelectorModal";
-import FullscreenAIModal from "../../components/modals/FullscreenAIModal";
+import CopilotDrawer from "../../components/modals/CopilotDrawer";
 import HighFrictionConfirmModal from "../../components/modals/HighFrictionConfirmModal";
 import NotificationCenter from "../../components/NotificationCenter";
 import SecurityAuditLogModal from "../../components/SecurityAuditLog";
@@ -50,7 +45,7 @@ import SettingsTab from "../../components/tabs/SettingsTab";
 
 import { useRoyalTheme } from "../../components/theme/ThemeContext";
 import { BriefingData } from "../../components/ExecutiveBriefing";
-import { DEMO_PRESETS, DemoPreset } from "../../components/DemoPresetBar";
+import { DEMO_PRESETS } from "../../lib/demoData";
 import { isValidSupabaseConfig, sanitizeAmount, sanitizeTextInput } from "../../lib/sanitize";
 import { api } from "../../lib/api";
 import { SecurityAuditLog as AuditEntry, NotificationItem } from "../../types";
@@ -66,7 +61,6 @@ const supabase = createClient(SAFE_SUPABASE_URL, SAFE_SUPABASE_ANON_KEY);
 type ActiveTabType = "overview" | "analytics" | "commitments" | "simulator" | "notebook" | "settings";
 
 function DashboardContent() {
-  const { theme, setTheme, themes } = useRoyalTheme();
   const { user: clerkUser } = useUser();
   const searchParams = useSearchParams();
 
@@ -122,7 +116,6 @@ function DashboardContent() {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
 
   // Modals Open State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,7 +138,6 @@ function DashboardContent() {
   // Form data for manual record
   const [formData, setFormData] = useState({ name: "", amount: "", type: "expense", category: "Housing" });
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [activePresetId, setActivePresetId] = useState<string | null>("tech-lead");
 
   const currentUserId = clerkUser?.id || "demo-user-id";
   const userDisplayName = clerkUser?.fullName || clerkUser?.firstName || "Sovereign Executive";
@@ -213,12 +205,11 @@ function DashboardContent() {
       } catch {}
 
       if (!SUPABASE_CONFIGURED) {
-        const preset = DEMO_PRESETS[0];
-        setNotes([{ id: "1", title: "Welcome to WealthSage", content: "Your local demo workspace is ready." }]);
-        setTransactions(preset.transactions);
-        setGoals(preset.goals);
-        setSubscriptions(preset.subscriptions);
-        fetchExecutiveBriefing(preset.transactions, preset.goals, preset.subscriptions);
+        setNotes([{ id: "1", title: "Welcome to WealthSage", content: "Your local workspace is ready." }]);
+        setTransactions([]);
+        setGoals([]);
+        setSubscriptions([]);
+        fetchExecutiveBriefing([], [], []);
         setIsLoading(false);
         return;
       }
@@ -238,7 +229,7 @@ function DashboardContent() {
         }]);
       }
 
-      let loadedTx = DEMO_PRESETS[0].transactions;
+      let loadedTx: any[] = [];
       const { data: txData } = await supabase
         .from("transactions")
         .select("id, user_id, name, amount, type, category, created_at")
@@ -247,7 +238,7 @@ function DashboardContent() {
       if (txData && txData.length > 0) loadedTx = txData;
       setTransactions(loadedTx);
 
-      let loadedGoals = DEMO_PRESETS[0].goals;
+      let loadedGoals: any[] = [];
       const { data: goalData } = await supabase
         .from("goals")
         .select("id, user_id, name, target, current, color, icon")
@@ -255,7 +246,7 @@ function DashboardContent() {
       if (goalData && goalData.length > 0) loadedGoals = goalData;
       setGoals(loadedGoals);
 
-      let loadedSubs = DEMO_PRESETS[0].subscriptions;
+      let loadedSubs: any[] = [];
       const { data: subData } = await supabase
         .from("subscriptions")
         .select("id, user_id, name, amount, cycle, nextDate, icon, color")
@@ -266,11 +257,10 @@ function DashboardContent() {
       fetchExecutiveBriefing(loadedTx, loadedGoals, loadedSubs);
     } catch (err) {
       console.warn("Data load fallback:", err);
-      const preset = DEMO_PRESETS[0];
-      setTransactions(preset.transactions);
-      setGoals(preset.goals);
-      setSubscriptions(preset.subscriptions);
-      fetchExecutiveBriefing(preset.transactions, preset.goals, preset.subscriptions);
+      setTransactions([]);
+      setGoals([]);
+      setSubscriptions([]);
+      fetchExecutiveBriefing([], [], []);
     } finally {
       setIsLoading(false);
     }
@@ -290,7 +280,7 @@ function DashboardContent() {
   }, [currentUserId]);
 
   // Derived Totals
-  const { totalIncome, totalExpense, currentBalance, wealthData, expensesByCategory } = useMemo(() => {
+  const { totalIncome, totalExpense, currentBalance, wealthData, expensesByCategory, incomeChangePct, expenseChangePct, balanceChangePct } = useMemo(() => {
     const income = transactions
       .filter((t) => t.type === "income")
       .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
@@ -313,13 +303,45 @@ function DashboardContent() {
       color: categoryPalette[i % categoryPalette.length],
     }));
 
-    const wData = [
+    const wData = transactions.length > 0 ? [
       { month: "Jan", wealth: Math.round(income * 0.7) },
       { month: "Feb", wealth: Math.round(income * 0.85) },
       { month: "Mar", wealth: Math.round(income - expense * 0.5) },
       { month: "Apr", wealth: Math.round(income * 1.05 - expense * 0.4) },
-      { month: "Current", wealth: Math.max(1000, income - expense) },
-    ];
+      { month: "Current", wealth: Math.max(0, income - expense) },
+    ] : [];
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    let currentMonthIncome = 0;
+    let prevMonthIncome = 0;
+    let currentMonthExpense = 0;
+    let prevMonthExpense = 0;
+
+    transactions.forEach(t => {
+      const txDate = new Date(t.created_at || now);
+      const amt = Number(t.amount) || 0;
+      if (txDate >= thirtyDaysAgo) {
+        if (t.type === "income") currentMonthIncome += amt;
+        else currentMonthExpense += amt;
+      } else if (txDate >= sixtyDaysAgo && txDate < thirtyDaysAgo) {
+        if (t.type === "income") prevMonthIncome += amt;
+        else prevMonthExpense += amt;
+      }
+    });
+
+    const calcPct = (curr: number, prev: number) => {
+      if (prev === 0) return curr > 0 ? 100 : 0;
+      return ((curr - prev) / Math.abs(prev)) * 100;
+    };
+
+    const incomeChangePct = calcPct(currentMonthIncome, prevMonthIncome);
+    const expenseChangePct = calcPct(currentMonthExpense, prevMonthExpense);
+    const currentBal = currentMonthIncome - currentMonthExpense;
+    const prevBal = prevMonthIncome - prevMonthExpense;
+    const balanceChangePct = calcPct(currentBal, prevBal);
 
     return {
       totalIncome: income,
@@ -327,17 +349,20 @@ function DashboardContent() {
       currentBalance: income - expense,
       wealthData: wData,
       expensesByCategory: expByCat,
+      incomeChangePct,
+      expenseChangePct,
+      balanceChangePct,
     };
   }, [transactions]);
 
-  // Persona Preset Selection
-  const handleSelectPreset = (preset: DemoPreset) => {
-    setActivePresetId(preset.id);
+  // Load Temporary Demo Data
+  const handleLoadDemoData = () => {
+    const preset = DEMO_PRESETS[0];
     setTransactions(preset.transactions);
     setGoals(preset.goals);
     setSubscriptions(preset.subscriptions);
     fetchExecutiveBriefing(preset.transactions, preset.goals, preset.subscriptions);
-    addToast(`Loaded Persona: ${preset.name}`, preset.badge, "ai");
+    addToast(`Loaded Demo Data`, "Temporary demo data loaded successfully.", "ai");
   };
 
   // Safe Execution of FULL Ledger Reset (clears ALL tables: transactions, goals, subs, notes, chat)
@@ -366,7 +391,6 @@ function DashboardContent() {
     }
 
     // Reset local state
-    setActivePresetId(null);
     setTransactions([]);
     setGoals([]);
     setSubscriptions([]);
@@ -402,7 +426,7 @@ function DashboardContent() {
     fetchExecutiveBriefing(updated, goals, subscriptions);
     setIsModalOpen(false);
     setFormData({ name: "", amount: "", type: "expense", category: "Housing" });
-    addToast("Record Logged", `${newTx.name} (${newTx.type === "income" ? "+" : "-"}$${newTx.amount})`);
+    addToast("Record Logged", `${newTx.name} (${newTx.type === "income" ? "+" : "-"}₹${newTx.amount})`);
   };
 
   const handleSaveGoal = async () => {
@@ -494,7 +518,7 @@ function DashboardContent() {
               };
               if (SUPABASE_CONFIGURED) await supabase.from("transactions").insert([newTx]);
               currentList.push(newTx);
-              addToast("AI Logged Record", `${newTx.name} ($${newTx.amount})`, "ai");
+              addToast("AI Logged Record", `${newTx.name} (₹${newTx.amount})`, "ai");
             } else if (update.action === "add_subscription") {
               const newSub = {
                 id: crypto.randomUUID(),
@@ -508,12 +532,12 @@ function DashboardContent() {
               };
               if (SUPABASE_CONFIGURED) await supabase.from("subscriptions").insert([newSub]);
               currentSubs.push(newSub);
-              addToast("AI Logged Subscription", `${newSub.name} ($${newSub.amount}/mo)`, "ai");
+              addToast("AI Logged Subscription", `${newSub.name} (₹${newSub.amount}/mo)`, "ai");
             } else if (update.action === "update" && update.id) {
               if (update.target === "transaction") {
                 if (SUPABASE_CONFIGURED) await supabase.from("transactions").update({ name: update.name, amount: update.amount, category: update.category }).eq("id", update.id);
                 currentList = currentList.map((t) => t.id === update.id ? { ...t, ...update } : t);
-                addToast("AI Updated Record", `${update.name} ($${update.amount})`, "ai");
+                addToast("AI Updated Record", `${update.name} (₹${update.amount})`, "ai");
               } else if (update.target === "goal") {
                 if (SUPABASE_CONFIGURED) await supabase.from("goals").update({ name: update.name, target: update.target_amount, current: update.current }).eq("id", update.id);
                 currentGoals = currentGoals.map((g) => g.id === update.id ? { ...g, ...update } : g);
@@ -552,7 +576,7 @@ function DashboardContent() {
       const expense = transactions.filter((t: any) => t.type === "expense").reduce((s: number, t: any) => s + (Number(t.amount) || 0), 0);
       const net = income - expense;
 
-      let fallbackText = `### WealthSage AI\n\nAnalyzing: *"${userMessage}"*\n\n**Active Ledger:** Income: $${income.toFixed(2)}/mo, Expenses: $${expense.toFixed(2)}/mo, Net: $${net.toFixed(2)}/mo\n\nAsk me to **log expenses**, **forecast growth**, **audit spending**, or **analyze trends**.`;
+      let fallbackText = `### WealthSage AI\n\nAnalyzing: *"${userMessage}"*\n\n**Active Ledger:** Income: ₹${income.toFixed(2)}/mo, Expenses: ₹${expense.toFixed(2)}/mo, Net: ₹${net.toFixed(2)}/mo\n\nAsk me to **log expenses**, **forecast growth**, **audit spending**, or **analyze trends**.`;
 
       setInsights((prev) => [
         ...prev,
@@ -605,6 +629,14 @@ function DashboardContent() {
         onSelect: () => setIsGlassAIOpen(true),
       },
       {
+        id: "cmd-theme",
+        label: "Change Theme",
+        description: "Switch to Echoid or other royal themes",
+        group: "Actions",
+        icon: Palette,
+        onSelect: () => setIsThemeModalOpen(true),
+      },
+      {
         id: "cmd-tab-overview",
         label: "Go to Overview",
         description: "Main telemetry and transaction ledger",
@@ -641,19 +673,18 @@ function DashboardContent() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
+    <div className="min-h-screen flex flex-col bg-black text-white transition-colors duration-300">
       {/* Toast Notification Stack */}
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
 
       {/* Top Workspace Header Bar */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-xl border-b" style={{ backgroundColor: 'color-mix(in srgb, var(--bg-surface) 90%, transparent)', borderColor: 'var(--border-subtle)' }}>
+      <header className="sticky top-0 z-40 w-full glass-nav">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Link + Back to Landing */}
           <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2 p-1.5 rounded-xl text-xs font-semibold transition-all"
-              style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
+              className="flex items-center gap-2 p-1.5 rounded-[12px] text-xs font-semibold transition-all bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white hover:bg-white/[0.1]"
               title="Return to Public Landing Page"
             >
               <ArrowLeft size={14} /> <span className="hidden sm:inline">Landing</span>
@@ -667,7 +698,7 @@ function DashboardContent() {
                 <span className="font-extrabold text-base tracking-tight" style={{ color: 'var(--text-primary)' }}>
                   WealthSage
                 </span>
-                <span className="hidden md:inline ml-2 text-[10px] font-mono px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--badge-bg)', color: 'var(--badge-text)', border: '1px solid var(--border-subtle)' }}>
+                <span className="hidden md:inline ml-2 text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/[0.05] text-[var(--text-dim)] border border-white/10">
                   WORKSPACE
                 </span>
               </div>
@@ -680,20 +711,18 @@ function DashboardContent() {
             <button
               type="button"
               onClick={() => setIsCommandPaletteOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer"
-              style={{ backgroundColor: 'var(--icon-subtle)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] text-xs transition-all cursor-pointer bg-white/[0.05] border border-white/10 text-[var(--text-dim)] hover:text-white"
             >
               <Command size={13} style={{ color: 'var(--accent-primary)' }} />
               <span className="hidden sm:inline">Command</span>
-              <kbd className="text-[10px] font-mono px-1 rounded" style={{ backgroundColor: 'var(--surface-input)', color: 'var(--text-muted)' }}>⌘K</kbd>
+              <kbd className="text-[10px] font-mono px-1 rounded-sm bg-white/10 text-[var(--text-dim)]">⌘K</kbd>
             </button>
 
             {/* Notification Center Trigger */}
             <button
               type="button"
               onClick={() => setIsNotifCenterOpen(true)}
-              className="p-2 rounded-xl relative transition-all cursor-pointer"
-              style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
+              className="p-2 rounded-[12px] relative transition-all cursor-pointer bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white"
               title="Notification Center"
             >
               <Bell size={16} />
@@ -706,8 +735,7 @@ function DashboardContent() {
             <button
               type="button"
               onClick={() => setIsAuditLogModalOpen(true)}
-              className="p-2 rounded-xl transition-all cursor-pointer"
-              style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
+              className="p-2 rounded-[12px] transition-all cursor-pointer bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white"
               title="Security Audit Trail"
             >
               <FileCheck2 size={16} />
@@ -717,22 +745,20 @@ function DashboardContent() {
             <button
               type="button"
               onClick={() => setIsThemeModalOpen(true)}
-              className="p-2 rounded-xl transition-all cursor-pointer"
-              style={{ backgroundColor: 'var(--icon-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
+              className="p-2 rounded-[12px] transition-all cursor-pointer bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white"
               title="Switch Royal Theme"
             >
               <Palette size={16} />
             </button>
 
             {/* Clerk User Avatar / Profile */}
-            <div className="ml-1 pl-2 flex items-center" style={{ borderLeft: '1px solid var(--border-subtle)' }}>
+            <div className="ml-1 pl-2 flex items-center border-l border-[var(--line-strong)]">
               {clerkUser ? (
                 <UserButton />
               ) : (
                 <Link
                   href="/sign-in"
-                  className="text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
-                  style={{ backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-primary)', border: '1px solid var(--border-royal)' }}
+                  className="text-xs font-bold px-3 py-1.5 rounded-[12px] transition-all bg-white/[0.05] text-[var(--accent-brass)] border border-[var(--accent-brass-dim)] hover:bg-white/10"
                 >
                   Sign In
                 </Link>
@@ -745,7 +771,7 @@ function DashboardContent() {
       {/* Main App Layout */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
         {/* Workspace Navigation Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-4 mb-6 scrollbar-none" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-4 mb-6 scrollbar-none border-b border-[var(--line)]">
           {[
             { id: "overview", label: "Overview", icon: LayoutDashboard },
             { id: "analytics", label: "Analytics & Trends", icon: BarChart3 },
@@ -762,11 +788,7 @@ function DashboardContent() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as ActiveTabType)}
-                className="flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer"
-                style={isActive
-                  ? { background: 'var(--accent-gradient)', color: 'var(--text-on-accent)', boxShadow: '0 4px 14px var(--accent-glow)', fontWeight: 800 }
-                  : { backgroundColor: 'var(--surface-overlay)', color: 'var(--text-muted)', border: '1px solid transparent' }
-                }
+                className={`flex items-center gap-2 px-4 py-2 rounded-[32px] text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${isActive ? 'bg-[var(--fill-ghost)] text-white border border-[var(--line-strong)]' : 'bg-transparent text-[var(--text-dim)] border border-transparent hover:text-white hover:bg-white/[0.05]'}`}
               >
                 <Icon size={15} /> {tab.label}
               </button>
@@ -782,11 +804,12 @@ function DashboardContent() {
               currentBalance={currentBalance}
               totalIncome={totalIncome}
               totalExpense={totalExpense}
+              incomeChangePct={incomeChangePct}
+              expenseChangePct={expenseChangePct}
+              balanceChangePct={balanceChangePct}
               transactions={transactions}
               currentUserId={currentUserId}
-              activePresetId={activePresetId}
-              onSelectPreset={handleSelectPreset}
-              onResetPreset={() => setIsResetConfirmModalOpen(true)}
+              onLoadDemoData={handleLoadDemoData}
               onOpenAddModal={() => setIsModalOpen(true)}
               onOpenAuditModal={runAuditAnalysis}
               onOpenGlassAI={() => setIsGlassAIOpen(true)}
@@ -838,6 +861,7 @@ function DashboardContent() {
                 setSubscriptions((prev) => prev.filter((s) => s.id !== id));
                 addToast("Subscription Removed", "Recurring commitment untracked.", "info");
               }}
+              onLoadDemoData={handleLoadDemoData}
             />
           )}
 
@@ -909,7 +933,7 @@ function DashboardContent() {
       </div>
 
       {/* Global Modals & Drawers */}
-      <TransactionModal
+      <FastCaptureModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formData={formData}
@@ -947,7 +971,7 @@ function DashboardContent() {
         onClose={() => setIsThemeModalOpen(false)}
       />
 
-      <FullscreenAIModal
+      <CopilotDrawer
         isOpen={isGlassAIOpen}
         onClose={() => setIsGlassAIOpen(false)}
         insights={insights}
@@ -955,7 +979,7 @@ function DashboardContent() {
         setInputValue={setInputValue}
         onSendMessage={dispatchChatMessage}
         isTyping={isTyping}
-        isScanning={isScanning}
+        isScanning={false}
         onFileUpload={() => {}}
         onClearChat={async () => {
           setInsights([]);
@@ -1003,6 +1027,14 @@ function DashboardContent() {
         requiredPhrase="CONFIRM RESET"
         confirmButtonText="Execute Hard Reset"
       />
+
+      {/* Floating AI Button */}
+      <button
+        onClick={() => setIsGlassAIOpen(true)}
+        className="fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center bg-[#d4af37] text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:scale-110 active:scale-95 transition-all z-50 group"
+      >
+        <Sparkles size={24} className="group-hover:animate-pulse" />
+      </button>
     </div>
   );
 }
