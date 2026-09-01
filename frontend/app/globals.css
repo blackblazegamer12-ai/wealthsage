@@ -8,11 +8,11 @@
   /* 1. ECHOID Obsidian & Brass (Default) */
   --bg: #000000;
   --card-bg: rgba(255, 255, 255, 0.03);
-  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(255, 255, 255, 0.25);
   --accent: #B48A5A; /* Warm Brass */
   --text-main: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.62);
-  --text-dimmer: rgba(255, 255, 255, 0.42);
+  --text-muted: rgba(255, 255, 255, 0.85);
+  --text-dimmer: rgba(255, 255, 255, 0.65);
 
   /* Legacy and App Overrides */
   --line: var(--border-color);
@@ -47,11 +47,11 @@
   /* 2. Midnight Sapphire */
   --bg: #0B1B3A;
   --card-bg: rgba(30, 58, 138, 0.4);
-  --border-color: rgba(180, 138, 90, 0.2);
+  --border-color: rgba(180, 138, 90, 0.35);
   --accent: #B48A5A; /* Warm Brass */
   --text-main: #E7E2D9;
-  --text-muted: rgba(231, 226, 217, 0.6);
-  --text-dimmer: rgba(231, 226, 217, 0.4);
+  --text-muted: rgba(231, 226, 217, 0.85);
+  --text-dimmer: rgba(231, 226, 217, 0.65);
 
   --line: var(--border-color);
   --line-strong: rgba(180, 138, 90, 0.4);
@@ -82,11 +82,11 @@
   /* 3. Obsidian & Emerald */
   --bg: #000000;
   --card-bg: rgba(255, 255, 255, 0.02);
-  --border-color: rgba(16, 185, 129, 0.2);
+  --border-color: rgba(16, 185, 129, 0.35);
   --accent: #10B981; /* Electric Emerald */
   --text-main: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.6);
-  --text-dimmer: rgba(255, 255, 255, 0.4);
+  --text-muted: rgba(255, 255, 255, 0.85);
+  --text-dimmer: rgba(255, 255, 255, 0.65);
 
   --line: var(--border-color);
   --line-strong: rgba(16, 185, 129, 0.4);
@@ -150,6 +150,41 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+[data-theme="light-high-contrast"] {
+  /* 4. High Contrast Accessibility Mode */
+  --bg: #F8FAFC;
+  --card-bg: #FFFFFF;
+  --border-color: #CBD5E1;
+  --accent: #0F172A; /* Slate 900 for max contrast */
+  --text-main: #020617; /* Very dark slate */
+  --text-muted: #334155; /* Slate 700 - safe contrast */
+  --text-dimmer: #475569; /* Slate 600 - safe contrast */
+
+  --line: var(--border-color);
+  --line-strong: #94A3B8;
+  --fill-ghost: rgba(15, 23, 42, 0.05);
+  --fill-solid: rgba(15, 23, 42, 0.1);
+  --glass-bg: var(--card-bg);
+  --glass-border: var(--border-color);
+  
+  --accent-brass: var(--accent);
+  --accent-brass-hover: #1E293B;
+  --accent-brass-dim: rgba(15, 23, 42, 0.1);
+  
+  --border-subtle: var(--border-color);
+  --border-royal: var(--border-color);
+  --border-royal-hover: #94A3B8;
+  --text-primary: var(--text-main);
+  --bg-primary: var(--bg);
+  --bg-surface: var(--bg);
+  --bg-elevated: var(--card-bg);
+  --surface-overlay: var(--card-bg);
+  --surface-input: #FFFFFF;
+  --accent-primary: var(--accent);
+  --accent-subtle: rgba(15, 23, 42, 0.05);
+  --bg-card: var(--card-bg);
 }
 
 body {
@@ -261,7 +296,32 @@ body {
   transition: border-color 0.25s ease;
 }
 .echoid-input::placeholder {
-  color: var(--text-dim);
+  color: var(--text-primary);
+}
+
+/* Range Sliders A11Y Touch Target */
+.touch-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  min-height: 48px;
+  background: transparent;
+  margin: 0;
+}
+.touch-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+.touch-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-top: -10px; /* (24-4)/2 */
+  cursor: pointer;
+  box-shadow: 0 0 10px currentColor;
 }
 .echoid-input:focus {
   outline: none;
@@ -287,10 +347,36 @@ body {
   background: var(--text-dim);
 }
 
-/* Focus Outline */
+/* Focus Outline — ECHOID Accent Ring */
 *:focus-visible {
-  outline: 1px solid rgba(255,255,255,0.7);
-  outline-offset: 3px;
+  outline: 2px solid var(--accent, #B48A5A);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+button:focus-visible, a:focus-visible, input:focus-visible {
+  box-shadow: 0 0 0 3px rgba(180, 138, 90, 0.25);
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Tab Navigation Scroll Snap */
+.tab-scroll-snap {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-scroll-snap > * {
+  scroll-snap-align: start;
 }
 
 /* Reduced Motion */

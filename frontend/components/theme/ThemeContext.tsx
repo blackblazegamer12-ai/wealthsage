@@ -6,7 +6,8 @@ export type RoyalThemeId =
   | "echoid"
   | "sapphire"
   | "obsidian"
-  | "titanium";
+  | "titanium"
+  | "light-high-contrast";
 
 export type ThemeMode = "light" | "dark";
 
@@ -61,6 +62,16 @@ export const ROYAL_THEMES: RoyalThemeInfo[] = [
     badge: "Minimalist",
     crownEmoji: "⚙️",
     mode: "dark",
+  },
+  {
+    id: "light-high-contrast" as RoyalThemeId,
+    name: "High Contrast Light",
+    subtitle: "Maximized Readability (WCAG AAA)",
+    accentColor: "#0F172A",
+    previewGradient: "from-[#F8FAFC] to-[#CBD5E1]",
+    badge: "Accessibility",
+    crownEmoji: "👁️",
+    mode: "light",
   },
 ];
 

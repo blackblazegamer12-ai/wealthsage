@@ -98,7 +98,25 @@ export default function RootLayout({
         className={`${plusJakarta.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
       >
         <head>
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="theme-color" content="#B48A5A" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
           <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+          <script dangerouslySetInnerHTML={{ __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    registration.unregister();
+                  }
+                });
+                caches.keys().then(function(names) {
+                  for (let name of names) caches.delete(name);
+                });
+              });
+            }
+          `}} />
         </head>
         <body className="min-h-full flex flex-col antialiased bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans">
           <ThemeProvider>

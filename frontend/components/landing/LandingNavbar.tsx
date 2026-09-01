@@ -16,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import ThemeSelectorModal from "../theme/ThemeSelectorModal";
+import WealthSageLogo from "../WealthSageLogo";
 
 export default function LandingNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -24,13 +25,11 @@ export default function LandingNavbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-[var(--bg-glass)] backdrop-blur-xl border-b border-[var(--border-subtle)] transition-all">
+      <header className="sticky top-0 z-50 w-full bg-[var(--bg-glass)] md:backdrop-blur-xl max-md:backdrop-blur-sm max-md:bg-black/60 border-b border-[var(--border-subtle)] transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 flex items-center justify-center text-black font-extrabold text-lg shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-all">
-              ⚡
-            </div>
+            <WealthSageLogo className="w-10 h-10 group-hover:scale-105 transition-all" />
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-lg tracking-tight text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">

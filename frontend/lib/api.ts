@@ -64,9 +64,9 @@ export async function resilientFetch<T>(endpoint: string, options: RequestOption
       }
 
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       clearTimeout(timer);
-      lastError = err;
+      lastError = err as Error;
 
       // If aborted or network error, retry with exponential backoff
       if (attempt < retries) {
@@ -97,51 +97,51 @@ export async function resilientFetch<T>(endpoint: string, options: RequestOption
 export const api = {
   getHealth: () => resilientFetch<{ status: string; gemini_configured: boolean; supabase_configured: boolean; plaid_configured: boolean }>('/api/health'),
   
-  getExecutiveBriefing: (transactions: any[], goals: any[], subscriptions: any[]) =>
-    resilientFetch<any>('/api/executive-briefing', {
+  getExecutiveBriefing: (transactions: Record<string, unknown>[], goals: Record<string, unknown>[], subscriptions: Record<string, unknown>[]) =>
+    resilientFetch<unknown>('/api/executive-briefing', {
       method: 'POST',
       body: JSON.stringify({ transactions, goals, subscriptions }),
       cacheKey: 'briefing_latest',
     }),
 
-  runAudit: (transactions: any[]) =>
-    resilientFetch<any>('/api/audit', {
+  runAudit: (transactions: Record<string, unknown>[]) =>
+    resilientFetch<unknown>('/api/audit', {
       method: 'POST',
       body: JSON.stringify({ transactions }),
     }),
 
-  sendChat: (message: string, history: any[], transactions: any[], userId?: string) =>
-    resilientFetch<any>('/api/chat', {
+  sendChat: (message: string, history: Record<string, unknown>[], transactions: Record<string, unknown>[], userId?: string) =>
+    resilientFetch<unknown>('/api/chat', {
       method: 'POST',
       body: JSON.stringify({ message, history, transactions, user_id: userId }),
       timeoutMs: 12000,
     }),
 
   explainTutor: (note_content: string) =>
-    resilientFetch<any>('/api/tutor', {
+    resilientFetch<unknown>('/api/tutor', {
       method: 'POST',
       body: JSON.stringify({ note_content }),
     }),
 
   syncTransactions: (userId: string, accessToken?: string, cursor?: string) =>
-    resilientFetch<any>('/api/transactions/sync', {
+    resilientFetch<unknown>('/api/transactions/sync', {
       method: 'POST',
       body: JSON.stringify({ user_id: userId, access_token: accessToken, cursor }),
     }),
 
   getAuditLogs: (userId: string) =>
-    resilientFetch<any>(`/api/audit-logs?user_id=${encodeURIComponent(userId)}`, {
+    resilientFetch<unknown>(`/api/audit-logs?user_id=${encodeURIComponent(userId)}`, {
       cacheKey: `audit_logs_${userId}`,
     }),
 
   logSecurityAction: (entry: { user_id: string; action: string; resource_type: string; resource_id: string; severity?: string }) =>
-    resilientFetch<any>('/api/audit-logs', {
+    resilientFetch<unknown>('/api/audit-logs', {
       method: 'POST',
       body: JSON.stringify(entry),
     }),
 
   getNotifications: (userId: string) =>
-    resilientFetch<any>(`/api/notifications?user_id=${encodeURIComponent(userId)}`, {
+    resilientFetch<unknown>(`/api/notifications?user_id=${encodeURIComponent(userId)}`, {
       cacheKey: `notifications_${userId}`,
     }),
 };

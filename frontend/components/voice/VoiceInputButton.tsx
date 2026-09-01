@@ -21,8 +21,10 @@ export default function VoiceInputButton({
     // Check Web Speech API availability
     if (typeof window !== "undefined") {
       const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition ||
+        (window as unknown as { webkitSpeechRecognition: unknown }).webkitSpeechRecognition;
       if (!SpeechRecognition) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsSupported(false);
       }
     }
@@ -35,7 +37,8 @@ export default function VoiceInputButton({
     }
 
     const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      ((window as unknown as { SpeechRecognition: any }).SpeechRecognition ||
+       (window as unknown as { webkitSpeechRecognition: any }).webkitSpeechRecognition) as any;
 
     if (isListening) {
       if (recognitionRef.current) {
@@ -57,6 +60,7 @@ export default function VoiceInputButton({
         onListeningChange?.(true);
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
         let currentTranscript = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -67,6 +71,7 @@ export default function VoiceInputButton({
         }
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
         console.warn("Speech recognition error:", event.error);
         setIsListening(false);
@@ -100,6 +105,11 @@ export default function VoiceInputButton({
         isListening
           ? "Listening... Click to stop"
           : "Click to speak commands (Web Speech API)"
+      }
+      aria-label={
+        isListening
+          ? "Stop listening"
+          : "Start voice input"
       }
     >
       {isListening ? (

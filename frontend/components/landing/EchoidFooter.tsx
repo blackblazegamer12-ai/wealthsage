@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import WealthSageLogo from "../WealthSageLogo";
 
 export default function EchoidFooter() {
   return (
@@ -16,8 +17,8 @@ export default function EchoidFooter() {
       </div>
 
       <div className="z-10 flex flex-col items-center gap-12 w-full max-w-4xl px-[var(--gutter)] text-center flex-1 justify-center">
-        <div className="w-16 h-16 rounded-full border border-[var(--accent-brass)] flex items-center justify-center text-xl text-black bg-[var(--accent-brass)] mb-4 shadow-[0_0_30px_rgba(212,175,55,0.3)]">
-          ⚡
+        <div className="w-16 h-16 rounded-full border border-[var(--accent-brass)] flex items-center justify-center bg-[var(--bg-primary)] mb-4 shadow-[0_0_30px_rgba(212,175,55,0.3)] overflow-hidden">
+          <WealthSageLogo className="w-10 h-10" />
         </div>
         
         <h2 className="font-sans font-light text-5xl md:text-7xl text-white tracking-tight">

@@ -30,10 +30,12 @@ export interface Subscription {
   nextDate: string;
   icon: string;
   color: string;
-  status?: 'Active' | 'Unused' | 'Price Hiked';
+  status?: 'Active' | 'Unused' | 'Price Hiked' | 'Pending Trial';
   supportEmail?: string;
   lastUsed?: string;
   priceHikeAmount?: number;
+  plan_tier?: string;
+  last_used_date?: string;
 }
 
 export interface Note {

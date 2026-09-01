@@ -9,7 +9,7 @@ interface HighFrictionConfirmModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  description: string;
+  description: React.ReactNode | string;
   requiredPhrase?: string;
   confirmButtonText?: string;
 }

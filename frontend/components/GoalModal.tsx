@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect } from 'react';
+import { useFocusTrap } from '../lib/useFocusTrap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Target } from 'lucide-react';
 
@@ -30,6 +31,8 @@ export default function GoalModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  const focusTrapRef = useFocusTrap(isOpen);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -42,6 +45,10 @@ export default function GoalModal({
           onClick={onClose}
         >
           <motion.div
+            ref={focusTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={editingGoal ? 'Edit Goal' : 'Create New Goal'}
             key="goal-modal-card"
             initial={{ scale: 0.95, y: 16 }}
             animate={{ scale: 1, y: 0 }}
@@ -76,8 +83,8 @@ export default function GoalModal({
                 <input 
                   type="text" 
                   maxLength={120}
-                  value={goalForm?.name || ''}
-                  onChange={(e) => setGoalForm({ ...goalForm, name: e.target.value })}
+                  value={goalForm?.title || ''}
+                  onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })}
                   className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none transition-all text-sm"
                   placeholder="e.g. Mountain Chalet or Angel Pool"
                 />
@@ -90,8 +97,8 @@ export default function GoalModal({
                     type="number" 
                     min="1"
                     max="999999999"
-                    value={goalForm?.target || ''}
-                    onChange={(e) => setGoalForm({ ...goalForm, target: e.target.value })}
+                    value={goalForm?.target_amount || ''}
+                    onChange={(e) => setGoalForm({ ...goalForm, target_amount: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none text-sm"
                   />
                 </div>
@@ -101,22 +108,20 @@ export default function GoalModal({
                     type="number" 
                     min="0"
                     max="999999999"
-                    value={goalForm?.current || ''}
-                    onChange={(e) => setGoalForm({ ...goalForm, current: e.target.value })}
+                    value={goalForm?.current_amount || ''}
+                    onChange={(e) => setGoalForm({ ...goalForm, current_amount: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 mb-1.5 block font-medium">Emoji Icon</label>
+                <label className="text-xs text-slate-400 mb-1.5 block font-medium">Target Date</label>
                 <input 
-                  type="text" 
-                  maxLength={2}
-                  value={goalForm?.icon || ''}
-                  onChange={(e) => setGoalForm({ ...goalForm, icon: e.target.value })}
-                  className="w-20 bg-black/40 border border-white/10 rounded-xl p-3 text-white text-center text-xl focus:border-[var(--accent-primary)] outline-none"
-                  placeholder="🎯"
+                  type="date" 
+                  value={goalForm?.target_date?.split('T')[0] || ''}
+                  onChange={(e) => setGoalForm({ ...goalForm, target_date: new Date(e.target.value).toISOString() })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none transition-all text-sm"
                 />
               </div>
             </div>

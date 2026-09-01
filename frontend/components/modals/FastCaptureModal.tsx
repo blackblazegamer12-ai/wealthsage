@@ -6,9 +6,11 @@ import { X, Mic, Camera, PenTool, CheckCircle, UploadCloud } from "lucide-react"
 interface FastCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
-  formData: { name: string; amount: string; type: string; category: string };
-  setFormData: React.Dispatch<React.SetStateAction<{ name: string; amount: string; type: string; category: string }>>;
+  formData: { description: string; amount: string; type: string; category: string };
+  setFormData: React.Dispatch<React.SetStateAction<{ description: string; amount: string; type: string; category: string }>>;
   onSubmit: (e: React.FormEvent) => void;
+  isDemoMode?: boolean;
+  onDirectSave?: (payload: { description: string, amount: number, type: 'inflow'|'outflow', category: string }) => void;
 }
 
 export default function FastCaptureModal({
@@ -17,6 +19,8 @@ export default function FastCaptureModal({
   formData,
   setFormData,
   onSubmit,
+  isDemoMode,
+  onDirectSave,
 }: FastCaptureModalProps) {
   const [activeTab, setActiveTab] = useState<"voice" | "receipt" | "manual">("manual");
   const [isListening, setIsListening] = useState(false);
@@ -35,6 +39,7 @@ export default function FastCaptureModal({
 
   // Mock Voice Logging
   const handleVoiceToggle = () => {
+    if (isDemoMode) return;
     if (!isListening) {
       setIsListening(true);
       setTranscript("");
@@ -42,8 +47,11 @@ export default function FastCaptureModal({
       setTimeout(() => setTranscript("Spent ₹450 on fuel..."), 1500);
       setTimeout(() => {
         setIsListening(false);
-        setFormData({ name: "Fuel Station", amount: "450", type: "expense", category: "Transportation" });
+        if (onDirectSave) {
+          onDirectSave({ description: "Fuel Station", amount: 450, type: "outflow", category: "Transport" });
+        }
         setActiveTab("manual");
+        onClose();
       }, 3000);
     } else {
       setIsListening(false);
@@ -52,12 +60,16 @@ export default function FastCaptureModal({
 
   // Mock Receipt OCR
   const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isDemoMode) return;
     if (e.target.files && e.target.files.length > 0) {
       setIsProcessing(true);
       setTimeout(() => {
         setIsProcessing(false);
-        setFormData({ name: "Swiggy Delivery", amount: "780", type: "expense", category: "Food & Dining" });
+        if (onDirectSave) {
+          onDirectSave({ description: "Swiggy Delivery", amount: 780, type: "outflow", category: "Food" });
+        }
         setActiveTab("manual");
+        onClose();
       }, 2000);
     }
   };
@@ -99,6 +111,12 @@ export default function FastCaptureModal({
               </button>
             </div>
 
+            {isDemoMode && (
+              <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs text-center font-bold">
+                Disabled in Demo Mode
+              </div>
+            )}
+
             {/* Tabs */}
             <div className="flex px-6 pt-4 gap-4 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
               {(["voice", "receipt", "manual"] as const).map((tab) => (
@@ -129,7 +147,8 @@ export default function FastCaptureModal({
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-10">
                   <button
                     onClick={handleVoiceToggle}
-                    className={`w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all ${isListening ? 'animate-pulse' : 'hover:scale-105'}`}
+                    disabled={isDemoMode}
+                    className={`w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all ${isListening ? 'animate-pulse' : 'hover:scale-105'} ${isDemoMode ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
                     style={{ backgroundColor: isListening ? 'var(--accent-glow)' : 'var(--accent)', color: isListening ? 'var(--accent)' : 'var(--bg)', border: `1px solid ${isListening ? 'var(--accent)' : 'transparent'}` }}
                   >
                     <Mic size={32} />
@@ -163,7 +182,7 @@ export default function FastCaptureModal({
                         </>
                       )}
                     </div>
-                    <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleReceiptUpload} disabled={isProcessing} />
+                    <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleReceiptUpload} disabled={isProcessing || isDemoMode} />
                   </label>
                 </motion.div>
               )}
@@ -177,9 +196,10 @@ export default function FastCaptureModal({
                       <input
                         type="text"
                         required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full rounded-xl p-3 outline-none transition-all text-sm font-bold border"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        disabled={isDemoMode}
+                        className="w-full rounded-xl p-3 outline-none transition-all text-sm font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--text-primary)', borderColor: 'var(--border-subtle)' }}
                         placeholder="e.g. Swiggy Order"
                       />
@@ -194,7 +214,8 @@ export default function FastCaptureModal({
                         step="1"
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        className="w-full rounded-xl p-3 outline-none transition-all text-sm font-bold border"
+                        disabled={isDemoMode}
+                        className="w-full rounded-xl p-3 outline-none transition-all text-sm font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--text-primary)', borderColor: 'var(--border-subtle)' }}
                         placeholder="450"
                       />
@@ -206,11 +227,12 @@ export default function FastCaptureModal({
                         <select
                           value={formData.type}
                           onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                          className="w-full rounded-xl p-3 outline-none appearance-none transition-all text-sm font-bold border"
+                          disabled={isDemoMode}
+                          className="w-full rounded-xl p-3 outline-none appearance-none transition-all text-sm font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
                           style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--text-primary)', borderColor: 'var(--border-subtle)' }}
                         >
-                          <option value="expense">Expense</option>
-                          <option value="income">Income</option>
+                          <option value="outflow">Outflow</option>
+                          <option value="inflow">Inflow</option>
                         </select>
                       </div>
                       <div>
@@ -220,7 +242,8 @@ export default function FastCaptureModal({
                           required
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full rounded-xl p-3 outline-none transition-all text-sm font-bold border"
+                          disabled={isDemoMode}
+                          className="w-full rounded-xl p-3 outline-none transition-all text-sm font-bold border disabled:opacity-50 disabled:cursor-not-allowed"
                           style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--text-primary)', borderColor: 'var(--border-subtle)' }}
                           placeholder="Food & Dining"
                         />
@@ -229,7 +252,8 @@ export default function FastCaptureModal({
 
                     <button
                       type="submit"
-                      className="w-full py-3.5 rounded-xl mt-4 text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 hover:scale-[1.02]"
+                      disabled={isDemoMode}
+                      className={`w-full py-3.5 rounded-xl mt-4 text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 hover:scale-[1.02] ${isDemoMode ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
                       style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
                     >
                       <CheckCircle size={16} /> Save Record

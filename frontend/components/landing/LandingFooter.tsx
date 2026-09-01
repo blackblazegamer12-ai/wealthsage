@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Sparkles, Shield, Code2, ExternalLink, Terminal, CheckCircle2 } from "lucide-react";
+import WealthSageLogo from "../WealthSageLogo";
 
 export default function LandingFooter() {
   return (
@@ -11,10 +12,8 @@ export default function LandingFooter() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 pb-12 border-b border-[var(--border-subtle)]">
           {/* Brand Col */}
           <div className="md:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-black font-extrabold text-base shadow-md shadow-amber-500/20">
-                ⚡
-              </div>
+            <Link href="/" className="flex items-center gap-3 group">
+              <WealthSageLogo className="w-9 h-9 group-hover:scale-105 transition-all" />
               <span className="font-extrabold text-lg text-[var(--text-primary)] tracking-tight">
                 WealthSage
               </span>

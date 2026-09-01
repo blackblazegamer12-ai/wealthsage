@@ -7,10 +7,11 @@
 CREATE TABLE IF NOT EXISTS transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL DEFAULT 'demo-user-id',
-  name TEXT NOT NULL,
+  description TEXT NOT NULL,
   amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
-  type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+  type TEXT NOT NULL CHECK (type IN ('inflow', 'outflow')),
   category TEXT NOT NULL DEFAULT 'General',
+  date TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -18,11 +19,10 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE TABLE IF NOT EXISTS goals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL DEFAULT 'demo-user-id',
-  name TEXT NOT NULL,
-  target NUMERIC(12, 2) NOT NULL DEFAULT 0,
-  current NUMERIC(12, 2) NOT NULL DEFAULT 0,
-  color TEXT DEFAULT '#06B6D4',
-  icon TEXT DEFAULT '🎯',
+  title TEXT NOT NULL,
+  target_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  current_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  target_date TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -31,15 +31,10 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL DEFAULT 'demo-user-id',
   name TEXT NOT NULL,
-  amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
-  cycle TEXT NOT NULL DEFAULT 'Monthly',
-  "nextDate" TEXT DEFAULT '1st',
-  icon TEXT DEFAULT '💸',
-  color TEXT DEFAULT '#10B981',
-  status TEXT DEFAULT 'Active',
-  "supportEmail" TEXT,
-  "lastUsed" TEXT,
-  "priceHikeAmount" NUMERIC(10, 2),
+  cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  billing_cycle TEXT NOT NULL DEFAULT 'Monthly',
+  next_billing_date TIMESTAMPTZ,
+  status TEXT DEFAULT 'active',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

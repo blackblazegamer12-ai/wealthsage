@@ -2,10 +2,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Sparkles, Save, Plus } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import dynamic from "next/dynamic";
 import "katex/dist/katex.min.css";
+
+const MarkdownRenderer = dynamic(() => import("../MarkdownRenderer"), { 
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-white/5 h-32 rounded-xl" />
+});
 
 interface NotebookTabProps {
   notes: any[];
@@ -14,7 +17,7 @@ interface NotebookTabProps {
   noteTitle: string;
   setNoteTitle: (title: string) => void;
   noteContent: string;
-  setNoteContent: React.Dispatch<React.SetStateAction<string>>;
+  setNoteContent: (content: string) => void;
   onCreateNewNote: () => void;
   onSaveNote: () => void;
   onAskTutor: () => void;
@@ -130,12 +133,10 @@ export default function NotebookTab({
         {/* Right Column: Live Rendered Output */}
         <div className="w-full lg:w-5/12 glass-panel rounded-3xl p-6 sm:p-8 overflow-y-auto prose max-w-none" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-royal)' }}>
           {noteContent ? (
-            <ReactMarkdown
-              remarkPlugins={[remarkMath]}
-              rehypePlugins={[[rehypeKatex, { strict: false }]]}
-            >
-              {noteContent}
-            </ReactMarkdown>
+            <MarkdownRenderer 
+              content={activeNote?.content || noteContent} 
+              className="prose prose-invert max-w-none prose-headings:font-bold prose-a:text-[var(--accent)] prose-p:leading-relaxed prose-pre:bg-[#0a0a0a] prose-pre:border prose-pre:border-[var(--line)] prose-code:text-[var(--accent-emerald)]"
+            />
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center text-xs italic" style={{ color: 'var(--text-muted)' }}>
               <BookOpen className="w-8 h-8 mb-2 opacity-40" />

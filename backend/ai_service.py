@@ -10,39 +10,8 @@ from dotenv import load_dotenv
 # Ensure environment variables are loaded immediately
 load_dotenv()
 
-# --- Resilient Gemini & Groq SDK Loader ---
-_SDK_MODE = "none"
-gemini_client = None
-
-def get_ai_client():
-    global gemini_client, _SDK_MODE
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    if not gemini_key or gemini_key.startswith("AQ."):
-        # Invalid or mock Gemini API key format
-        _SDK_MODE = "none"
-        gemini_client = None
-        return gemini_client, _SDK_MODE
-
-    try:
-        from google import genai
-        gemini_client = genai.Client(api_key=gemini_key)
-        _SDK_MODE = "genai_new"
-        return gemini_client, _SDK_MODE
-    except Exception as e1:
-        try:
-            import google.generativeai as genai_legacy
-            genai_legacy.configure(api_key=gemini_key)
-            gemini_client = genai_legacy.GenerativeModel("gemini-1.5-flash")
-            _SDK_MODE = "generativeai_legacy"
-            return gemini_client, _SDK_MODE
-        except Exception as e2:
-            print(f"[WARN] Gemini client initialization failed: {e1} | {e2}")
-            gemini_client = None
-            _SDK_MODE = "none"
-            return None, "none"
-
-# Initial client setup
-get_ai_client()
+import urllib.request
+import urllib.error
 
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
@@ -74,64 +43,32 @@ def _clean_json_response(raw_text: str) -> Dict[str, Any]:
         return {}
 
 
-def _generate_gemini_content(prompt_text: str, temperature: float = 0.3, timeout_seconds: float = 3.5) -> str:
-    """Invokes Gemini with automatic model fallbacks and a strict timeout."""
-    client, mode = get_ai_client()
-    if not client or mode == "none":
-        raise RuntimeError("Gemini AI client is not configured.")
+def _generate_llm_content(messages: List[Dict[str, str]], temperature: float = 0.3, max_tokens: int = 8192, timeout_seconds: float = 10.0) -> str:
+    """Invokes Gemma-4-31b-it via Groq API (or compatible endpoint)."""
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key.startswith("AQ."):
+        raise RuntimeError("Valid API key is not configured for Gemma 4 31b LLM.")
 
-    def _call_api():
-        if mode == "genai_new":
-            from google.genai import types
-            models_to_try = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-2.5-flash", "gemini-1.5-flash"]
-            last_err = None
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+    
+    payload = {
+        "model": "gemma-4-31b-it",
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens
+    }
 
-            for model_name in models_to_try:
-                try:
-                    response = client.models.generate_content(
-                        model=model_name,
-                        contents=prompt_text,
-                        config=types.GenerateContentConfig(
-                            response_mime_type="application/json",
-                            temperature=temperature,
-                        )
-                    )
-                    if response and response.text:
-                        return response.text
-                except Exception as err:
-                    last_err = err
-                    continue
-
-            # Fallback to standard request without forced mime_type
-            for model_name in models_to_try:
-                try:
-                    response = client.models.generate_content(
-                        model=model_name,
-                        contents=prompt_text,
-                    )
-                    if response and response.text:
-                        return response.text
-                except Exception:
-                    continue
-
-            raise RuntimeError(f"All Gemini models failed. Last error: {last_err}")
-
-        elif mode == "generativeai_legacy":
-            response = client.generate_content(
-                prompt_text,
-                generation_config={"temperature": temperature}
-            )
-            return response.text or ""
-        else:
-            raise RuntimeError("No valid Gemini SDK available.")
-
-    # Execute with strict timeout using ThreadPoolExecutor
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(_call_api)
-        try:
-            return future.result(timeout=timeout_seconds)
-        except concurrent.futures.TimeoutError:
-            raise TimeoutError(f"Gemini API call timed out after {timeout_seconds}s")
+    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout_seconds) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            return result['choices'][0]['message']['content']
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"LLM API request failed: {e}")
 
 
 def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -146,24 +83,20 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
     surplus = net_surplus if net_surplus > 0 else 1500.0
 
     # 1. 5-Year Compound Forecast
-    if any(k in query_lower for k in ["forecast", "compound", "5-year", "trajectory", "surplus"]):
+    if any(k in query_lower for k in ["forecast", "compound", "5-year", "5 years", "projection", "invest", "save"]):
+        amount_match = re.search(r"₹\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)", user_query) or re.search(r"(\d+(?:,\d{3})*(?:\.\d{1,2})?)", user_query)
+        parsed_amt = float(amount_match.group(1).replace(',', '')) if amount_match else 0
+        surplus = parsed_amt if parsed_amt > 0 else (net_surplus if net_surplus > 0 else 1500.0)
         rate = 0.08  # 8% target alpha rate
         months = 60
         r_m = rate / 12
         future_val = surplus * (((1 + r_m)**months - 1) / r_m)
-        formatted_val = f"₹{future_val:,.2f}"
 
         reply = (
-            f"### Autonomous 5-Year Compounding Projection\n\n"
-            f"Based on your current net monthly retained surplus of **₹{surplus:,.2f}**, "
-            f"the hyperbolic compounding trajectory over a 5-year horizon ($t = 5\\text{{ years}}$, $n = 12$) "
-            f"at an estimated annual rate of $r = 8\\%$ yields:\n\n"
-            f"$$A(t) = S \\times \\frac{{(1 + r/n)^{{nt}} - 1}}{{r/n}} = {formatted_val}$$\n\n"
-            f"**Quantitative Breakdown:**\n"
-            f"- **Cumulative Principal Saved**: ₹{surplus * 60:,.2f}\n"
-            f"- **Projected Compound Interest Alpha**: ₹{future_val - (surplus * 60):,.2f}\n"
-            f"- **Compound Acceleration Index**: +24.8% APY Surplus Velocity\n\n"
-            f"**Recommendation**: Reallocate at least 40% of this monthly surplus into automated broad-market indexing to capture this trajectory."
+            f"By saving ₹{surplus:,.2f} every month for the next 5 years, your money would grow to **₹{future_val:,.2f}**.\n\n"
+            f"- **Principal Invested:** ₹{surplus * 60:,.2f}\n"
+            f"- **Estimated Growth:** ₹{future_val - (surplus * 60):,.2f}\n\n"
+            f"Investing this amount consistently in a broad-market index fund can significantly accelerate your wealth building. Would you like to adjust the monthly contribution to see how it affects your returns?"
         )
         return {"reply": reply, "has_updates": False, "updates": []}
 
@@ -178,13 +111,10 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
         top_amt = cat_spend.get(top_cat, 340.0)
 
         reply = (
-            f"### Deep Cash Flow & Outflow Leak Audit\n\n"
-            f"I analyzed your active ledger telemetry. Outflows total **₹{expense:,.2f}/month** against revenue of **₹{income:,.2f}/month**.\n\n"
-            f"**Primary Leak Vectors Identified:**\n"
-            f"1. **Highest Concentration Category**: `{top_cat}` totaling **₹{top_amt:,.2f}**.\n"
-            f"2. **Unused Recurring Subscriptions**: Flagged dormant recurring items contributing to creeping leakage.\n\n"
-            f"$$\\text{{Score}}_{{\\text{{leak}}}} = \\frac{{\\Delta t}}{{\\text{{30}}}} \\times \\text{{Cost}} = {top_amt * 1.25:,.2f}$$\n\n"
-            f"**Remediation**: Execute automated subscription pruning to recover an estimated **₹1,820/month** (₹21,840/year)."
+            f"Your top spending category is currently **{top_cat}** at **₹{top_amt:,.2f}** per month.\n\n"
+            f"- **Total Monthly Outflow:** ₹{expense:,.2f}\n"
+            f"- **Total Monthly Revenue:** ₹{income:,.2f}\n\n"
+            f"Reviewing unused or dormant subscriptions could yield an estimated monthly savings of around ₹1,820. Would you like me to help identify some alternatives or consolidation options?"
         )
         return {"reply": reply, "has_updates": False, "updates": []}
 
@@ -195,14 +125,10 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
         runway_m = round(est_reserve / monthly_burn, 1)
 
         reply = (
-            f"### Zero-Revenue Survival Runway Analysis\n\n"
-            f"Evaluating your capital preservation baseline under a zero-income scenario:\n\n"
-            f"$$\\text{{Runway}}_{{\\text{{months}}}} = \\frac{{\\text{{Reserves}}}}{{\\mu_{{\\text{{burn}}}} \\times (1 + \\sigma_{{\\text{{vol}}}})}} = {runway_m} \\text{{ months}}$$\n\n"
-            f"**Telemetry Summary:**\n"
-            f"- **Estimated Cash Reserves**: ₹{est_reserve:,.2f}\n"
-            f"- **Adjusted Monthly Burn Rate**: ₹{monthly_burn:,.2f}/month\n"
-            f"- **Zero-Income Survival Runway**: **{runway_m} Months**\n\n"
-            f"**Status**: {'Optimal Safeguard (>6 Months)' if runway_m >= 6 else 'Warning (Below 6 Month Safeguard)'}."
+            f"You currently have an estimated **{runway_m}-month** emergency runway.\n\n"
+            f"- **Estimated Cash Reserves:** ₹{est_reserve:,.2f}\n"
+            f"- **Adjusted Monthly Burn:** ₹{monthly_burn:,.2f}\n\n"
+            f"A 6-month safety net is typically optimal to protect against unexpected disruptions. Would you like to explore strategies for building a stronger reserve?"
         )
         return {"reply": reply, "has_updates": False, "updates": []}
 
@@ -221,7 +147,7 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
             item_name = "General Expense Log"
             category = "Miscellaneous"
 
-        reply = f"Successfully logged expense of **₹{amount:,.2f}** under category `{category}`. Your sovereign ledger telemetry has been updated in real time."
+        reply = f"I've logged an expense of **₹{amount:,.2f}** under `{category}`. Your ledger has been updated successfully."
         return {
             "reply": reply,
             "has_updates": True,
@@ -243,7 +169,7 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
             try: amount = float(val_str)
             except: pass
 
-        reply = f"Logged automated SIP investment allocation of **₹{amount:,.2f}/month** into `Broad Equity Index (NIFTY/SENSEX)`."
+        reply = f"I've logged an automated investment allocation of **₹{amount:,.2f}/month** into a Broad Equity Index."
         return {
             "reply": reply,
             "has_updates": True,
@@ -259,21 +185,22 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
     # 6. Reset Ledger Intent
     elif "reset" in query_lower and "ledger" in query_lower:
         return {
-            "reply": "Executing full sovereign ledger reset. All historical transactions and active commitments have been zeroed.",
+            "reply": "I have executed a full ledger reset. All historical transactions and active commitments have been cleared.",
             "has_updates": True,
             "updates": [{"action": "reset"}]
         }
 
-    # General Quantitative Response
+    # 7. Greeting Intent
+    elif query_lower.strip() in ["hi", "hello", "hey", "help", "greetings"]:
+        reply = "Hello! I am WealthSage, your AI financial assistant. I can help you analyze your portfolio, audit your expenses, or project your compounding growth. How can I assist you today?"
+        return {"reply": reply, "has_updates": False, "updates": []}
+
     reply = (
-        f"### Sovereign Financial Synthesis\n\n"
-        f"Analyzing query: *\"{user_query}\"*\n\n"
-        f"**Active Ledger Summary:**\n"
-        f"- **Monthly Inflow**: ₹{income:,.2f}\n"
-        f"- **Monthly Outflow**: ₹{expense:,.2f}\n"
-        f"- **Net Retained Surplus**: ₹{net_surplus:,.2f}\n\n"
-        f"$$\\text{{Velocity}}_{{\\text{{wealth}}}} = \\frac{{\\text{{Net Surplus}}}}{{\\text{{Inflow}}}} = {f'{round(net_surplus/income*100, 1)}%' if income > 0 else '0%'}$$\n\n"
-        f"You can ask me to **forecast 5-year compounding trajectories**, **audit cash leaks**, **evaluate zero-income runway**, or **log transactions**."
+        f"I can help you analyze your finances. Here is a quick overview of your current ledger:\n\n"
+        f"- **Monthly Inflow:** ₹{income:,.2f}\n"
+        f"- **Monthly Outflow:** ₹{expense:,.2f}\n"
+        f"- **Net Savings:** ₹{net_surplus:,.2f}\n\n"
+        f"You can ask me to forecast your 5-year compounding growth, audit your spending, or log a new transaction. How would you like to proceed?"
     )
     return {"reply": reply, "has_updates": False, "updates": []}
 
@@ -289,24 +216,36 @@ def process_financial_chat(
     if current_transactions is None:
         current_transactions = []
 
-    client, mode = get_ai_client()
-
-    # Fast fallback if Gemini client is not initialized or configured with mock API key
-    if not client or mode == "none":
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("GEMINI_API_KEY")
+    # Fast fallback if API key is not initialized or configured with mock API key
+    if not api_key or api_key.startswith("AQ."):
         return _deterministic_offline_chat(user_query, current_transactions)
 
     system_prompt = f"""
-You are WealthSage Mirror, an elite, highly intelligent, and effortlessly cool personal wealth companion. 
-Your tone should feel like a brilliant private wealth manager who is also a close friend—conversational, warm, sharp, and concise.
+========================================
+SYSTEM PROMPT: WEALTHSAGE ASSISTANT (PROFESSIONAL & ANALYTICAL)
+========================================
+You are WealthSage, a highly intelligent, polite, and objective financial AI assistant, designed to sound exactly like ChatGPT. You provide structured, insightful, and helpful financial guidance.
 
 CURRENT LEDGER:
 {json.dumps(current_transactions)}
 
-RULES FOR RESPONSES:
-1. **Match the Vibe:** If the user says "hi" or casual chat, respond warmly with casual energy and an emoji. Never give a stiff robotic answer to a casual greeting.
-2. **Use Emojis Naturally:** Sprinkle relevant emojis (✨, 🚀, 💡, 🛡️, 📈) to make the text visually engaging and human.
-3. **Never Dump Raw Markdown Tables:** If showing financial projections, format them into clean, easy-to-read bullet points with bold highlights instead of broken markdown code or raw LaTeX strings.
-4. **Be Proactive:** Always end with a helpful, conversational follow-up question or a quick action suggestion.
+1. TONE AND STYLE (THE CHATGPT PERSONA):
+- Be highly intelligent, clear, and professional.
+- Do NOT use exaggerated emojis (like 🚀, 💡, 🎯, or 🔥). If you use emojis at all, keep it to a bare minimum (e.g., maybe one subtle emoji if relevant, or none at all).
+- Avoid gimmicky slang or overly excited phrases (e.g., "Let's go!", "Boom!"). Use objective, analytical, yet helpful language.
+- Structure responses naturally. Use standard markdown like bullet points, bolding for emphasis, and paragraph breaks to make it readable.
+- Do not force rigid "Step 1, Step 2, Step 3" structures unless explicitly asking for step-by-step instructions.
+
+2. BANNED LANGUAGE & FORMATTING:
+- NEVER output raw LaTeX formulas or Velocity metrics unless explicitly requested.
+- Do not output raw JSON arrays or database dumps to the user.
+- Keep calculations accurate but explain them in plain text (e.g., "If you invest ₹5000 a month...").
+
+3. RESPONSE STRUCTURE:
+- Start with a clear, concise answer to the user's question or a summary of the requested calculation.
+- Provide a clean bulleted breakdown of the key numbers if analyzing a ledger or a forecast.
+- End with a polite, helpful follow-up question (e.g., "Would you like me to adjust the interest rate or time horizon?").
 
 DIRECTIVES:
 1. Mathematical Autonomy: Accurately calculate totals and percentages.
@@ -328,7 +267,7 @@ Respond strictly in valid JSON format:
     "updates": []
 }}
 """
-    contents = [system_prompt]
+    messages = [{"role": "system", "content": system_prompt}]
     for msg in history:
         if isinstance(msg, dict):
             raw_role = str(msg.get("role") or msg.get("type") or "user").lower()
@@ -337,15 +276,14 @@ Respond strictly in valid JSON format:
             raw_role = getattr(msg, "role", "user")
             content = getattr(msg, "content", "")
             
-        role_label = "Model" if raw_role in ["assistant", "advice", "bot", "model"] else "User"
+        role = "assistant" if raw_role in ["assistant", "advice", "bot", "model"] else "user"
         if content.strip():
-            contents.append(f"{role_label}: {content}")
+            messages.append({"role": role, "content": content})
             
-    contents.append(f"User: {user_query}")
-    prompt_text = "\n\n".join(contents)
+    messages.append({"role": "user", "content": user_query})
 
     try:
-        raw_output = _generate_gemini_content(prompt_text, temperature=0.3, timeout_seconds=3.5)
+        raw_output = _generate_llm_content(messages, temperature=0.3, max_tokens=8192, timeout_seconds=10.0)
         parsed = _clean_json_response(raw_output)
         if not parsed or "reply" not in parsed:
             return {"reply": raw_output or "Request processed.", "has_updates": False, "updates": []}
@@ -426,8 +364,8 @@ def generate_executive_briefing(
         "tactical_action": f"Automate reallocation of ₹{max(5000, int(net_surplus * 0.4)):,.0f} monthly surplus into high-yield indexing."
     }
 
-    client, mode = get_ai_client()
-    if not client or mode == "none":
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key.startswith("AQ."):
         return fallback_result
 
     system_prompt = f"""
@@ -457,9 +395,10 @@ REQUIRED JSON FORMAT:
     "tactical_action": "One high-yield tactical instruction with projected ROI"
 }}
 """
+    messages = [{"role": "system", "content": system_prompt}]
 
     try:
-        raw_output = _generate_gemini_content(system_prompt, temperature=0.3, timeout_seconds=3.0)
+        raw_output = _generate_llm_content(messages, temperature=0.3, max_tokens=8192, timeout_seconds=10.0)
         ai_data = _clean_json_response(raw_output)
         for k, v in fallback_result.items():
             if k not in ai_data:
@@ -481,8 +420,8 @@ def generate_financial_audit(transactions: list) -> dict:
         "report": f"### Comprehensive Financial Audit\n\n**Net Status**: {alert}\n**Savings Velocity**: {savings_rate}\n\nLedger analysis of {len(transactions)} transactions confirms total monthly revenue of ₹{income:,.2f} versus outflows of ₹{expense:,.2f}."
     }
 
-    client, mode = get_ai_client()
-    if not client or mode == "none":
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key.startswith("AQ."):
         return fallback
 
     system_prompt = f"""
@@ -499,8 +438,9 @@ REQUIRED JSON FORMAT:
     "report": "A 3-paragraph markdown formatted report analyzing burn velocity, risk vectors, and tactical remediations."
 }}
 """
+    messages = [{"role": "system", "content": system_prompt}]
     try:
-        raw_output = _generate_gemini_content(system_prompt, temperature=0.3, timeout_seconds=3.0)
+        raw_output = _generate_llm_content(messages, temperature=0.3, max_tokens=8192, timeout_seconds=10.0)
         parsed = _clean_json_response(raw_output)
         if parsed and "report" in parsed:
             return parsed
@@ -510,8 +450,8 @@ REQUIRED JSON FORMAT:
 
 
 def generate_tutor_explanation(note_content: str) -> dict:
-    client, mode = get_ai_client()
-    if not client or mode == "none":
+    api_key = os.getenv("GROQ_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if not api_key or api_key.startswith("AQ."):
         return {"explanation": f"### Mathematical Financial Clarification\n\nAnalyzing: **{note_content}**\n\nWealth compounding is governed by the compound interest formula:\n\n$$A = P \\left(1 + \\frac{{r}}{{n}}\\right)^{{nt}}$$\n\nWhere $P$ is principal, $r$ is nominal interest rate, $n$ is compounding frequency, and $t$ is time in years."}
 
     prompt = f"""
@@ -521,8 +461,9 @@ Use LaTeX formatting with $ for inline math and $$ for block math equations.
 
 Note to explain: {note_content}
 """
+    messages = [{"role": "user", "content": prompt}]
     try:
-        raw_output = _generate_gemini_content(prompt, temperature=0.5, timeout_seconds=3.5)
+        raw_output = _generate_llm_content(messages, temperature=0.5, max_tokens=8192, timeout_seconds=10.0)
         return {"explanation": raw_output or ""}
     except Exception as e:
         return {"explanation": f"### Mathematical Financial Clarification\n\nAnalyzing: **{note_content}**\n\nWealth compounding is governed by the compound interest formula:\n\n$$A = P \\left(1 + \\frac{{r}}{{n}}\\right)^{{nt}}$$\n\nWhere $P$ is principal, $r$ is nominal interest rate, $n$ is compounding frequency, and $t$ is time in years."}

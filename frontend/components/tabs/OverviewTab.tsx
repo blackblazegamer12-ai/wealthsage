@@ -20,10 +20,22 @@ import {
   Sparkles,
   ShieldAlert,
   Layers,
-  Search
+  Search,
+  QrCode
 } from "lucide-react";
+import { BriefingData } from "../ExecutiveBriefing";
+import SageHealthScore from "../SageHealthScore";
+import dynamic from 'next/dynamic';
+
+const PredictiveCashflowChart = dynamic(() => import("../PredictiveCashflowChart"), { 
+  ssr: false, 
+  loading: () => <div className="h-64 animate-pulse rounded-xl bg-white/5" /> 
+});
+
 import PlaidLinkButton from "../PlaidLinkButton";
+import UPISplitModal from "../modals/UPISplitModal";
 import { useDebounce } from "../../lib/hooks";
+import { useWealthStore } from "../../lib/store";
 
 interface OverviewTabProps {
   userName: string;
@@ -40,6 +52,8 @@ interface OverviewTabProps {
   onOpenAuditModal: () => void;
   onOpenGlassAI: () => void;
   onBankConnected: () => void;
+  isDemoMode?: boolean;
+  onExitDemoMode?: () => void;
 }
 
 const formatCurrency = (amount: number) =>
@@ -49,29 +63,30 @@ const formatCurrency = (amount: number) =>
 // React.memo prevents re-rendering unchanged rows when parent state changes.
 interface TxRowProps {
   tx: any;
+  onSplit: (tx: any) => void;
 }
 
-const TransactionRow = React.memo(function TransactionRow({ tx }: TxRowProps) {
+const TransactionRow = React.memo(function TransactionRow({ tx, onSplit }: TxRowProps) {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4 transition-all group" style={{ backgroundColor: 'transparent' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-overlay)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
       <div className="flex items-center gap-3 min-w-0">
         <div
           className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
-            tx.type === "income"
+            tx.type === "inflow"
               ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               : "bg-rose-500/10 text-rose-400 border-rose-500/20"
           }`}
         >
-          {tx.type === "income" ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+          {tx.type === "inflow" ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
         </div>
 
         <div className="min-w-0">
-          <p className="font-semibold text-xs sm:text-sm truncate" style={{ color: 'var(--text-primary)' }}>{tx.name}</p>
+          <p className="font-semibold text-xs sm:text-sm truncate" style={{ color: 'var(--text-primary)' }}>{tx.description || tx.name}</p>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-[11px] truncate max-w-[100px] sm:max-w-none" style={{ color: 'var(--text-muted)' }}>{tx.category}</span>
             <span
               className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase shrink-0 ${
-                tx.type === "income"
+                tx.type === "inflow"
                   ? "bg-emerald-500/15 text-emerald-300"
                   : "bg-rose-500/15 text-rose-300"
               }`}
@@ -82,14 +97,26 @@ const TransactionRow = React.memo(function TransactionRow({ tx }: TxRowProps) {
         </div>
       </div>
 
-      <p
-        className={`font-bold text-sm sm:text-base shrink-0 ${
-          tx.type === "income" ? "text-emerald-500" : ""
-        }`}
-        style={tx.type !== 'income' ? { color: 'var(--text-primary)' } : undefined}
-      >
-        {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount)}
-      </p>
+      <div className="flex items-center gap-4 shrink-0">
+        <p
+          className={`font-bold text-sm sm:text-base shrink-0 ${
+            tx.type === "inflow" ? "text-emerald-500" : ""
+          }`}
+          style={tx.type !== 'inflow' ? { color: 'var(--text-primary)' } : undefined}
+        >
+          {tx.type === "inflow" ? "+" : "-"}{formatCurrency(tx.amount)}
+        </p>
+        {tx.type === "outflow" && (
+          <button 
+            onClick={() => onSplit(tx)}
+            title="Split Expense via UPI"
+            aria-label="Split Expense via UPI"
+            className="p-2 rounded-xl transition-all opacity-0 group-hover:opacity-100 bg-white/5 border border-white/10 hover:bg-[var(--accent-brass-dim)] hover:text-[var(--accent)] hover:border-[var(--accent)] text-[var(--text-dim)]"
+          >
+            <QrCode size={14} />
+          </button>
+        )}
+      </div>
     </div>
   );
 });
@@ -109,11 +136,17 @@ export default function OverviewTab({
   onOpenAddModal,
   onOpenAuditModal,
   onOpenGlassAI,
-  onBankConnected
+  onBankConnected,
+  isDemoMode,
+  onExitDemoMode
 }: OverviewTabProps) {
   // Raw input state — updates instantly for snappy UX
-  const [searchInput, setSearchInput] = useState("");
+  const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
+  const [splitTx, setSplitTx] = useState<any>(null);
 
+  const { ledgerMode, toggleLedgerMode } = useWealthStore();
+
+  const [searchInput, setSearchInput] = useState("");
   // Debounced search term — filter recalculation waits 300ms after typing stops
   const debouncedSearch = useDebounce(searchInput, 300);
 
@@ -123,7 +156,7 @@ export default function OverviewTab({
     if (!term) return transactions;
     return transactions.filter(
       (tx) =>
-        tx.name?.toLowerCase().includes(term) ||
+        tx.description?.toLowerCase().includes(term) || tx.name?.toLowerCase().includes(term) ||
         tx.category?.toLowerCase().includes(term)
     );
   }, [debouncedSearch, transactions]);
@@ -142,7 +175,7 @@ export default function OverviewTab({
       className="space-y-6 sm:space-y-8"
     >
       {/* Empty State / Load Demo Data */}
-      {transactions.length === 0 && (
+      {transactions.length === 0 && !isDemoMode && (
         <div className="p-6 rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface-overlay)] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Welcome to WealthSage!</h3>
@@ -157,6 +190,48 @@ export default function OverviewTab({
             style={{ backgroundColor: 'var(--accent)' }}
           >
             Load Demo Data
+          </button>
+        </div>
+      )}
+
+      {/* Ledger Mode Switcher */}
+      <div className="flex items-center justify-between p-4 sm:p-5 rounded-3xl border bg-black/40 backdrop-blur-md" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${ledgerMode === 'household' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+            {ledgerMode === 'household' ? <Layers size={18} /> : <Wallet size={18} />}
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-white">
+              {ledgerMode === 'household' ? 'Shared Household Ledger' : 'Sovereign Personal Ledger'}
+            </h3>
+            <p className="text-xs text-[var(--text-dim)] font-mono mt-0.5">
+              {ledgerMode === 'household' ? 'Viewing combined telemetry for you and your partner.' : 'Viewing solely your personal assets and liabilities.'}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={toggleLedgerMode}
+          className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${ledgerMode === 'household' ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-[var(--accent)] hover:brightness-110 text-black'}`}
+        >
+          Switch to {ledgerMode === 'household' ? 'Personal' : 'Household'}
+        </button>
+      </div>
+
+      {/* Demo Mode Active Banner */}
+      {isDemoMode && (
+        <div className="p-6 rounded-3xl border border-rose-500/30 bg-rose-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold text-rose-400">Demo Mode Active</h3>
+            <p className="text-sm mt-1 text-rose-400/80">
+              You are viewing sample data. Mutating actions are disabled to prevent data contamination.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onExitDemoMode}
+            className="px-5 py-2.5 rounded-xl font-bold text-sm text-white bg-rose-500 transition-all shadow-lg hover:scale-[1.02] whitespace-nowrap"
+          >
+            Clear Demo Data
           </button>
         </div>
       )}
@@ -193,7 +268,8 @@ export default function OverviewTab({
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl btn-brass text-xs sm:text-sm font-bold shadow-lg transition-all hover:scale-[1.02]"
+            disabled={isDemoMode}
+            className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl btn-brass text-xs sm:text-sm font-bold shadow-lg transition-all hover:scale-[1.02] ${isDemoMode ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
           >
             <Plus size={16} /> Add Record
           </button>
@@ -329,11 +405,28 @@ export default function OverviewTab({
           ) : (
             // Reversed list, each row is a memoized component
             [...filteredTransactions].reverse().map((tx) => (
-              <TransactionRow key={tx.id} tx={tx} />
+              <TransactionRow 
+                key={tx.id} 
+                tx={tx} 
+                onSplit={(t) => {
+                  setSplitTx(t);
+                  setIsSplitModalOpen(true);
+                }} 
+              />
             ))
           )}
         </div>
       </div>
+      
+      {/* Modals */}
+      <UPISplitModal 
+        isOpen={isSplitModalOpen}
+        onClose={() => {
+          setIsSplitModalOpen(false);
+          setSplitTx(null);
+        }}
+        transaction={splitTx} 
+      />
     </motion.div>
   );
 }

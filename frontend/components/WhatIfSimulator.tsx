@@ -112,7 +112,7 @@ export default function WhatIfSimulator() {
               step={50}
               value={dailyCost}
               onChange={(e) => setDailyCost(Number(e.target.value))}
-              className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-cyan-400"
+              className="touch-slider text-cyan-400"
             />
           </div>
 
@@ -131,7 +131,7 @@ export default function WhatIfSimulator() {
               step={0.5}
               value={annualReturn}
               onChange={(e) => setAnnualReturn(Number(e.target.value))}
-              className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-[#10B981]"
+              className="touch-slider text-[#10B981]"
             />
           </div>
 
@@ -150,7 +150,7 @@ export default function WhatIfSimulator() {
               step={1}
               value={years}
               onChange={(e) => setYears(Number(e.target.value))}
-              className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-[#8B5CF6]"
+              className="touch-slider text-[#8B5CF6]"
             />
           </div>
         </div>

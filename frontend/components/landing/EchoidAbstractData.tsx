@@ -38,7 +38,7 @@ export default function EchoidAbstractData() {
         {/* Animated Voice Orb */}
         <div className="relative group cursor-pointer">
            <div className="absolute inset-0 bg-[#d4af37]/20 rounded-full blur-3xl animate-pulse"></div>
-           <div className="relative w-32 h-32 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-xl flex items-center justify-center">
+           <div className="relative w-32 h-32 rounded-full border border-white/10 bg-white/[0.02] md:backdrop-blur-xl max-md:backdrop-blur-sm max-md:bg-black/60 flex items-center justify-center">
              <div className="absolute inset-0 rounded-full border border-[#d4af37]/50 animate-ping opacity-30"></div>
              <div className="absolute inset-2 rounded-full border border-white/20 animate-[spin_3s_linear_infinite]"></div>
              <Mic size={48} className="text-white opacity-80 group-hover:opacity-100 transition-opacity" />

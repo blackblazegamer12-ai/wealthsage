@@ -91,34 +91,32 @@ export default function SubscriptionModal({
                     min="0.01"
                     max="999999999"
                     step="0.01"
-                    value={subForm?.amount || ''}
-                    onChange={(e) => setSubForm({ ...subForm, amount: e.target.value })}
+                    value={subForm?.cost || ''}
+                    onChange={(e) => setSubForm({ ...subForm, cost: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none text-sm"
                   />
                 </div>
                 <div>
                   <label className="text-xs text-slate-400 mb-1.5 block font-medium">Due Date</label>
                   <input 
-                    type="text" 
-                    maxLength={32}
-                    placeholder="e.g. 15th"
-                    value={subForm?.nextDate || ''}
-                    onChange={(e) => setSubForm({ ...subForm, nextDate: e.target.value })}
+                    type="date" 
+                    value={subForm?.next_billing_date?.split('T')[0] || ''}
+                    onChange={(e) => setSubForm({ ...subForm, next_billing_date: new Date(e.target.value).toISOString() })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 mb-1.5 block font-medium">Emoji Icon</label>
-                <input 
-                  type="text" 
-                  maxLength={2}
-                  value={subForm?.icon || ''}
-                  onChange={(e) => setSubForm({ ...subForm, icon: e.target.value })}
-                  className="w-20 bg-black/40 border border-white/10 rounded-xl p-3 text-white text-center text-xl focus:border-[var(--accent-primary)] outline-none"
-                  placeholder="💸"
-                />
+                <label className="text-xs text-slate-400 mb-1.5 block font-medium">Status</label>
+                <select
+                  value={subForm?.status || 'active'}
+                  onChange={(e) => setSubForm({ ...subForm, status: e.target.value })}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--accent-primary)] outline-none transition-all text-sm appearance-none"
+                >
+                  <option value="active">Active</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
               </div>
             </div>
 

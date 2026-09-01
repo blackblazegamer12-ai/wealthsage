@@ -1,19 +1,24 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
+import ToastContainer, { ToastMessage } from './Toast';
 
 export default function PlaidLinkButton({ userId, onBankConnected }: { userId: string; onBankConnected?: () => void }) {
   const [token, setToken] = useState<string | null>(null);
-  const [isMock, setIsMock] = useState(false);
   const [loading, setLoading] = useState(true);
   const [statusText, setStatusText] = useState("🔗 Connect Bank Account");
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = useCallback((title: string, description: string, type: "success" | "ai" | "warning" | "info") => {
+    const id = crypto.randomUUID();
+    setToasts((prev) => [...prev, { id, title, description, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4500);
+  }, []);
 
   useEffect(() => {
     async function createLinkToken() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        
-        const response = await fetch(`${apiUrl}/api/plaid/create-link-token`, {
+        const response = await fetch('/api/plaid/create-link-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: userId })
@@ -23,73 +28,83 @@ export default function PlaidLinkButton({ userId, onBankConnected }: { userId: s
           const data = await response.json();
           if (data.link_token) {
             setToken(data.link_token);
-            setIsMock(Boolean(data.is_mock));
-            setStatusText(data.is_mock ? "🔗 Connect Bank (Demo Mode)" : "🔗 Connect Bank Account");
             setLoading(false);
             return;
           }
+        } else {
+          const errorData = await response.json();
+          addToast("Plaid Link Error", errorData.error || "Failed to initialize Plaid.", "warning");
         }
         
-        setStatusText("🔗 Connect Bank (Demo Mode)");
-        setIsMock(true);
+        setStatusText("🔗 Connection Unavailable");
         setLoading(false);
       } catch (err) {
-        console.warn("Backend link token unavailable, enabling demo mode:", err);
-        setStatusText("🔗 Connect Bank (Demo Mode)");
-        setIsMock(true);
+        console.warn("Backend link token unavailable:", err);
+        setStatusText("🔗 Connection Unavailable");
+        addToast("Network Error", "Unable to reach Plaid servers.", "warning");
         setLoading(false);
       }
     }
     
-    // Safety timer: If backend doesn't respond in 3 seconds, unlock button anyway
-    const timer = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-        setIsMock(true);
-        setStatusText("🔗 Connect Bank (Demo Mode)");
-      }
-    }, 3000);
-
     createLinkToken();
-    return () => clearTimeout(timer);
-  }, [userId]);
+  }, [userId, addToast]);
 
   const { open, ready } = usePlaidLink({
-    token: token && !isMock ? token : null,
+    token: token,
     onSuccess: async (public_token) => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        await fetch(`${apiUrl}/api/plaid/exchange-token`, {
+        const response = await fetch('/api/plaid/exchange-public-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ public_token, user_id: userId })
         });
-        alert("Bank successfully connected with WealthSage!");
-        if (onBankConnected) onBankConnected();
-        else window.location.reload();
+        
+        if (response.ok) {
+          addToast("Success", "Bank successfully connected with WealthSage!", "success");
+          if (onBankConnected) setTimeout(() => onBankConnected(), 1500);
+          else setTimeout(() => window.location.reload(), 1500);
+        } else {
+           const errorData = await response.json();
+           addToast("Exchange Error", errorData.error || "Failed to securely save bank connection.", "warning");
+        }
       } catch (err) {
         console.error("Error exchanging token:", err);
+        addToast("Exchange Error", "Failed to communicate securely with the server.", "warning");
       }
     },
+    onExit: (err, metadata) => {
+      if (err) {
+        addToast("Plaid Link Exit", err.display_message || err.error_message || "An error occurred during link.", "warning");
+      }
+    }
   });
 
   const handleClick = () => {
-    if (token && !isMock && ready) {
+    if (token && ready) {
       open();
-    } else {
-      alert("⚡ Running in Sandbox Demo Mode: Bank account connection simulated successfully!");
-      if (onBankConnected) onBankConnected();
+    } else if (!token && !loading) {
+      addToast("Setup Required", "Plaid is not properly configured. Check your environment variables.", "warning");
     }
   };
 
   return (
-    <button 
-      type="button"
-      onClick={handleClick}
-      disabled={loading}
-      className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/35 cursor-pointer disabled:opacity-50 text-sm"
-    >
-      {loading ? "Initializing..." : statusText}
-    </button>
+    <>
+      <ToastContainer toasts={toasts} onDismiss={(id) => setToasts(t => t.filter(x => x.id !== id))} />
+      <button 
+        type="button"
+        onClick={handleClick}
+        disabled={loading}
+        className="bg-white/5 hover:bg-white/10 text-white font-semibold py-2.5 px-5 rounded-2xl transition-all border border-emerald-500/30 hover:border-emerald-400/60 shadow-[0_0_15px_rgba(16,185,129,0.15)] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] cursor-pointer disabled:opacity-50 text-sm backdrop-blur-md flex items-center justify-center gap-2"
+      >
+        {loading ? (
+          <>
+            <span className="w-4 h-4 rounded-full border-2 border-emerald-500/30 border-t-emerald-400 animate-spin"></span>
+            Initializing Secure Link...
+          </>
+        ) : (
+          statusText
+        )}
+      </button>
+    </>
   );
 }

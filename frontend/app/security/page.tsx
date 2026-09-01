@@ -9,7 +9,7 @@ export default function SecurityPage() {
     <div className="min-h-screen bg-black text-white font-sans selection:bg-[#d4af37]/30 selection:text-white">
       
       {/* Top Navbar */}
-      <nav className="fixed top-0 left-0 w-full z-50 bg-black/50 backdrop-blur-xl border-b border-white/5">
+      <nav className="fixed top-0 left-0 w-full z-50 bg-black/50 md:backdrop-blur-xl max-md:backdrop-blur-sm max-md:bg-black/60 border-b border-white/5">
         <div className="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/" className="font-sans text-[clamp(18px,1.5vw,24px)] tracking-[0.2em] text-white no-underline leading-none uppercase">
             ECHOID

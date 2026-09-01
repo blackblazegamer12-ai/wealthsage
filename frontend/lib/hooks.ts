@@ -2,7 +2,7 @@
  * lib/hooks.ts
  * Reusable performance hooks for WealthSage frontend.
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import debounce from "lodash.debounce";
 
 /**
@@ -36,12 +36,11 @@ export function useDebounce<T>(value: T, delay: number): T {
  * Example:
  *   const handleDelete = useStableCallback((id: string) => deleteItem(id));
  */
-export function useStableCallback<T extends (...args: any[]) => any>(fn: T): T {
+export function useStableCallback<T extends (...args: unknown[]) => unknown>(fn: T): T {
   const ref = useRef<T>(fn);
   // Always keep the ref current so the stable wrapper calls the latest version
   useEffect(() => {
     ref.current = fn;
   });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useRef(((...args: any[]) => ref.current(...args)) as T).current;
+  return useCallback((...args: unknown[]) => ref.current(...args), []) as T;
 }

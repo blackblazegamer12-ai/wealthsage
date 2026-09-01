@@ -8,6 +8,7 @@ import EverythingYouNeed from "../components/landing/EverythingYouNeed";
 import EchoidToolkit from "../components/landing/EchoidToolkit";
 import ComparisonMatrix from "../components/landing/ComparisonMatrix";
 import EchoidFooter from "../components/landing/EchoidFooter";
+import WealthSageLogo from "../components/WealthSageLogo";
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,9 +45,7 @@ export default function LandingPage() {
         {/* ROW 1: NAVBAR */}
         <header className="flex justify-between items-center gap-[32px] px-[clamp(20px,2.4vw,34px)] py-6 z-20">
           <Link href="/" className="flex items-center gap-3 font-sans text-[clamp(18px,1.5vw,24px)] tracking-[0.2em] text-white no-underline leading-none uppercase group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-black font-extrabold text-sm shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              ⚡
-            </div>
+            <WealthSageLogo className="w-8 h-8 group-hover:scale-105 transition-transform" />
             WEALTHSAGE
           </Link>
 
@@ -101,7 +100,7 @@ export default function LandingPage() {
             </p>
 
             {/* FLOATING TELEMETRY HUD */}
-            <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-[10px] font-mono tracking-widest uppercase text-white shadow-2xl">
+            <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 md:backdrop-blur-xl max-md:backdrop-blur-sm max-md:bg-black/60 border border-white/10 text-[10px] font-mono tracking-widest uppercase text-white shadow-2xl">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               Live Financial Telemetry: Active • 99.9% Sync Precision
             </div>

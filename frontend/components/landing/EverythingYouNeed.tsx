@@ -175,7 +175,7 @@ export default function EverythingYouNeed() {
           {/* Visual Component */}
           <div className="relative w-full lg:w-[360px] h-[320px] lg:h-full min-h-[240px] rounded-2xl border border-white/10 bg-white/[0.015] backdrop-blur-md flex flex-col items-center justify-center overflow-hidden">
             {/* Toggle */}
-            <div className="absolute top-4 flex justify-center gap-2 z-10 bg-black/40 backdrop-blur-xl p-1.5 rounded-full border border-white/10">
+            <div className="absolute top-4 flex justify-center gap-2 z-10 bg-black/40 md:backdrop-blur-xl max-md:backdrop-blur-sm max-md:bg-black/60 p-1.5 rounded-full border border-white/10">
               <button 
                 onClick={() => setActiveMode('voice')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono font-bold tracking-widest transition-all duration-300 relative ${

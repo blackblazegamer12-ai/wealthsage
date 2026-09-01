@@ -20,6 +20,8 @@ interface CommitmentsTabProps {
   onOpenSubModal: (sub?: any) => void;
   onDeleteSub: (id: string) => void;
   onLoadDemoData: () => void;
+  isDemoMode?: boolean;
+  onExitDemoMode?: () => void;
 }
 
 const formatCurrency = (amount: number) =>
@@ -60,8 +62,8 @@ interface GoalCardProps {
 }
 
 const GoalCard = memo(function GoalCard({ goal, index, onEdit, onDelete }: GoalCardProps) {
-  const progress = Math.round(((goal.current || 0) / (goal.target || 1)) * 100);
-  const remaining = (goal.target || 0) - (goal.current || 0);
+  const progress = Math.round(((goal.current_amount || 0) / (goal.target_amount || 1)) * 100);
+  const remaining = (goal.target_amount || 0) - (goal.current_amount || 0);
 
   return (
     <motion.div
@@ -100,9 +102,9 @@ const GoalCard = memo(function GoalCard({ goal, index, onEdit, onDelete }: GoalC
         </div>
       </div>
 
-      <h3 className="text-sm sm:text-base font-bold mb-0.5" style={{ color: 'var(--text-primary)' }}>{goal.name}</h3>
+      <h3 className="text-sm sm:text-base font-bold mb-0.5" style={{ color: 'var(--text-primary)' }}>{goal.title}</h3>
       <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-        {formatCurrency(goal.current || 0)} of {formatCurrency(goal.target || 0)}
+        {formatCurrency(goal.current_amount || 0)} of {formatCurrency(goal.target_amount || 0)}
       </p>
 
       <div className="w-full space-y-2">
@@ -148,15 +150,15 @@ const SubscriptionRow = memo(function SubscriptionRow({ sub, onEdit, onDelete }:
         <div>
           <h4 className="font-bold text-xs sm:text-sm" style={{ color: 'var(--text-primary)' }}>{sub.name}</h4>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{sub.cycle || "Monthly"}</span>
-            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>• Due {sub.nextDate || "1st"}</span>
+            <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{sub.billing_cycle || "Monthly"}</span>
+            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>• Due {sub.next_billing_date?.split('T')[0] || "1st"}</span>
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4">
         <p className="font-extrabold text-sm sm:text-base" style={{ color: 'var(--text-primary)' }}>
-          ₹{Number(sub.amount || 0).toFixed(2)}
+          ₹{Number(sub.cost || 0).toFixed(2)}
         </p>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
@@ -188,7 +190,9 @@ export default function CommitmentsTab({
   onDeleteGoal,
   onOpenSubModal,
   onDeleteSub,
-  onLoadDemoData
+  onLoadDemoData,
+  isDemoMode,
+  onExitDemoMode
 }: CommitmentsTabProps) {
   return (
     <motion.div
@@ -206,6 +210,25 @@ export default function CommitmentsTab({
         </p>
       </div>
 
+      {/* Demo Mode Active Banner */}
+      {isDemoMode && (
+        <div className="p-6 rounded-3xl border border-rose-500/30 bg-rose-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold text-rose-400">Demo Mode Active</h3>
+            <p className="text-sm mt-1 text-rose-400/80">
+              You are viewing sample data. Mutating actions are disabled to prevent data contamination.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onExitDemoMode}
+            className="px-5 py-2.5 rounded-xl font-bold text-sm text-white bg-rose-500 transition-all shadow-lg hover:scale-[1.02] whitespace-nowrap"
+          >
+            Clear Demo Data
+          </button>
+        </div>
+      )}
+
       {/* Financial Goals */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -216,7 +239,8 @@ export default function CommitmentsTab({
           <button
             type="button"
             onClick={() => onOpenGoalModal()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
+            disabled={isDemoMode}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02] ${isDemoMode ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
             style={{ backgroundColor: 'var(--accent)' }}
           >
             <Plus size={14} /> Add Goal
@@ -270,7 +294,8 @@ export default function CommitmentsTab({
           <button
             type="button"
             onClick={() => onOpenSubModal()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
+            disabled={isDemoMode}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02] ${isDemoMode ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
             style={{ backgroundColor: 'var(--accent)' }}
           >
             <Plus size={14} /> Add Expense
