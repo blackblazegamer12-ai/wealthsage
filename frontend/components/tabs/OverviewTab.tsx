@@ -32,7 +32,11 @@ const PredictiveCashflowChart = dynamic(() => import("../PredictiveCashflowChart
   loading: () => <div className="h-64 animate-pulse rounded-xl bg-white/5" /> 
 });
 
-import PlaidLinkButton from "../PlaidLinkButton";
+const PlaidLinkButton = dynamic(() => import("../PlaidLinkButton"), { 
+  ssr: false, 
+  loading: () => <button disabled className="bg-white/5 text-white/50 font-semibold py-2.5 px-5 rounded-2xl border border-emerald-500/10 text-sm">Loading...</button> 
+});
+
 import UPISplitModal from "../modals/UPISplitModal";
 import { useDebounce } from "../../lib/hooks";
 import { useWealthStore } from "../../lib/store";
