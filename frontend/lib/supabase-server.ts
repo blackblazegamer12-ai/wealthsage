@@ -7,9 +7,7 @@ let _client: SupabaseClient | null = null;
  * Uses SUPABASE_URL and SUPABASE_SERVICE_KEY (service role key) for full access.
  * Falls back to NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY.
  */
-export function getSupabaseServer(): SupabaseClient | null {
-  if (_client) return _client;
-
+export function getSupabaseServer(clerkToken?: string): SupabaseClient | null {
   const url =
     process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const key =
@@ -22,11 +20,20 @@ export function getSupabaseServer(): SupabaseClient | null {
     return null;
   }
 
+  const options: any = {
+    auth: { persistSession: false },
+  };
+
+  if (clerkToken) {
+    options.global = {
+      headers: {
+        Authorization: `Bearer ${clerkToken}`,
+      },
+    };
+  }
+
   try {
-    _client = createClient(url, key, {
-      auth: { persistSession: false },
-    });
-    return _client;
+    return createClient(url, key, options);
   } catch {
     return null;
   }

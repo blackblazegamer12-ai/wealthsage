@@ -144,8 +144,13 @@ export default function OverviewTab({
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
   const [splitTx, setSplitTx] = useState<any>(null);
 
-  const { ledgerMode, toggleLedgerMode } = useWealthStore();
-
+  const getActiveGoals = useWealthStore(state => state.getActiveGoals);
+  const getActiveSubscriptions = useWealthStore(state => state.getActiveSubscriptions);
+  const ledgerMode = useWealthStore(state => state.ledgerMode);
+  const toggleLedgerMode = useWealthStore(state => state.toggleLedgerMode);
+  
+  const goals = getActiveGoals();
+  const subscriptions = getActiveSubscriptions();
   const [searchInput, setSearchInput] = useState("");
   // Debounced search term — filter recalculation waits 300ms after typing stops
   const debouncedSearch = useDebounce(searchInput, 300);
@@ -240,7 +245,7 @@ export default function OverviewTab({
       <div className="flex flex-wrap items-end justify-between gap-4 pb-2">
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-primary)] mb-1 block">
-            Royal Financial Overview
+            Household Financial Overview
           </span>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Welcome back, {userName}

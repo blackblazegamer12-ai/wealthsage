@@ -28,22 +28,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WealthSage | Autonomous AI Financial Intelligence & Sovereign Vault",
-  description: "Institutional-grade financial intelligence, predictive cashflow compounding, autonomous subscription optimization, and real-time sovereign ledger telemetry.",
+  title: "WealthSage | Parental Guardrail & Scam Shield for Indian Families",
+  description: "Protect your family's money from unauthorized gaming purchases, dark-pattern subscriptions, and UPI scams. AI-powered Guardian Shield with real-time transaction monitoring.",
   keywords: [
-    "personal finance",
-    "AI wealth advisor",
-    "cash velocity",
-    "financial intelligence",
-    "sovereign ledger",
-    "predictive compounding",
-    "quantitative finance",
-    "wealth management"
+    "parental controls India",
+    "gaming purchase protection",
+    "UPI scam shield",
+    "family finance India",
+    "dark pattern subscriptions",
+    "child spending monitor",
+    "Free Fire purchase block",
+    "BGMI parental control"
   ],
   authors: [{ name: "WealthSage Technologies" }],
   openGraph: {
-    title: "WealthSage | Autonomous AI Financial Intelligence",
-    description: "Institutional-grade financial intelligence and predictive wealth compounding.",
+    title: "WealthSage | Parental Guardrail & Scam Shield",
+    description: "AI-powered family finance protection. Stop unauthorized gaming purchases and dark-pattern subscriptions.",
     type: "website",
   },
 };

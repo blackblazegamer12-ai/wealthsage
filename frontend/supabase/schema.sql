@@ -171,3 +171,72 @@ DO $$ BEGIN
   END IF;
 EXCEPTION WHEN others THEN NULL;
 END $$;
+
+-- ============================================================
+-- GUARDIAN SHIELD SCHEMA EVOLUTION (NON-DESTRUCTIVE)
+-- Safe ALTER TABLE — adds new columns with defaults
+-- ============================================================
+
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS merchant TEXT DEFAULT 'Unknown';
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'approved';
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS actor TEXT DEFAULT 'parent';
+
+DO $$ BEGIN
+  ALTER TABLE transactions ADD CONSTRAINT chk_tx_status CHECK (status IN ('approved', 'pending', 'flagged'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE transactions ADD CONSTRAINT chk_tx_actor CHECK (actor IN ('parent', 'child'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- 9. UPI MANDATES (Recurring Autopay Subscriptions)
+CREATE TABLE IF NOT EXISTS upi_mandates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL DEFAULT 'demo-user-id',
+  merchant TEXT NOT NULL,
+  amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  frequency TEXT NOT NULL DEFAULT 'Monthly',
+  last_charged TIMESTAMPTZ,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'paused', 'revoked')),
+  is_dark_pattern BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 10. PAYMENT REQUESTS (UPI Circle Delegation Queue)
+CREATE TABLE IF NOT EXISTS payment_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL DEFAULT 'demo-user-id',
+  merchant TEXT NOT NULL,
+  amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+  child_label TEXT DEFAULT 'Child Device',
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_upi_mandates_user_id ON upi_mandates(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_requests_user_id ON payment_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_actor ON transactions(actor);
+
+ALTER TABLE upi_mandates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all for demo' AND tablename = 'upi_mandates') THEN
+    CREATE POLICY "Allow all for demo" ON upi_mandates FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+EXCEPTION WHEN others THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all for demo' AND tablename = 'payment_requests') THEN
+    CREATE POLICY "Allow all for demo" ON payment_requests FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+EXCEPTION WHEN others THEN NULL;
+END $$;
+
+-- 11. DEDUPLICATION (Survival Blueprint Hardening)
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS utr_reference TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_tx_ref ON transactions(utr_reference) WHERE utr_reference IS NOT NULL;

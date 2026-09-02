@@ -7,6 +7,7 @@ import LandingNavbar from "../../components/landing/LandingNavbar";
 import LandingFooter from "../../components/landing/LandingFooter";
 import ParametricHeroCanvas from "../../components/landing/ParametricHeroCanvas";
 import LaTeXFormula from "../../components/LaTeXFormula";
+import QuantumCashflowChart from "../../components/QuantumCashflowChart";
 
 export default function QuantumVisualizerPage() {
   return (
@@ -28,7 +29,8 @@ export default function QuantumVisualizerPage() {
         </div>
 
         {/* The Interactive Parametric Canvas with full controls */}
-        <div className="mb-12">
+        <div className="mb-12 space-y-8">
+          <QuantumCashflowChart currentBurn={120000} leakage={18000} />
           <ParametricHeroCanvas />
         </div>
 

@@ -293,6 +293,34 @@ Would you like to simulate a different monthly amount or change the timeline?`,
     };
   }
 
+  // Agentic Action: Cyber Defense / Fraud Report (with Negation Handling)
+  if (q.match(/^(?!.*\b(don'?t|not|never|no|stop)\b).*(fraud|scam|unauthorized|stolen|complain|1930)/)) {
+    // Attempt to find the most recent anomaly or generic outflow
+    const suspiciousTx = transactions.find((t: any) => t.type === 'outflow' && t.amount > 500) || transactions[0];
+    
+    return {
+      reply: `🚨 **Autonomous Protocol Engaged: 1930 Cyber Defense**\n\nI have drafted a National Cyber Crime complaint for the recent transaction to **${suspiciousTx?.merchant || 'the gateway'}**. \n\nPlease review the generated narrative and execute the chargeback protocol immediately.`,
+      has_updates: true,
+      updates: [{
+        action: "OPEN_MODAL",
+        target: "cyber_defense",
+        data: suspiciousTx
+      }],
+    };
+  }
+
+  // Agentic Action: Quantum Prediction
+  if (q.match(/predict|future|quantum|30 days|forecast/)) {
+    return {
+      reply: `🌌 **Quantum Visualizer Initialized**\n\nI have generated the parallel timelines for your cash flow over the next 30, 60, and 90 days based on your current burn rate and detected subscription leakage.\n\nOpening the Quantum Matrix now...`,
+      has_updates: true,
+      updates: [{
+        action: "NAVIGATE",
+        target: "/quantum-visualizer"
+      }],
+    };
+  }
+
   // Reset
   if (q.includes("reset") && (q.includes("ledger") || q.includes("all") || q.includes("everything"))) {
     return {

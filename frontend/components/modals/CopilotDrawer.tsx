@@ -70,9 +70,9 @@ export default function CopilotDrawer({
   }, [isOpen, onClose]);
 
   const quickPills = [
-    { label: "⚡ Deep Cash Leak Audit", prompt: "Perform a deep audit on my spending habits and identify cash flow leaks." },
-    { label: "📊 5-Year Compound Forecast", prompt: "Forecast my 5-year wealth trajectory based on current monthly surplus." },
-    { label: "🛒 Log ₹2000 Grocery Run", prompt: "Log ₹2000 expense at Whole Foods for groceries" },
+    { label: "🛡️ Scan for Gaming Transactions", prompt: "Scan my transactions for any unauthorized gaming purchases by my children." },
+    { label: "💳 Review Active Mandates", prompt: "Are there any dark-pattern subscriptions draining my account right now?" },
+    { label: "🚨 Simulate Guardian Alert", prompt: "Simulate a gaming purchase webhook alert." },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -85,6 +85,10 @@ export default function CopilotDrawer({
 
   const handleVoiceTranscript = (spokenText: string) => {
     setInputValue(spokenText);
+    if (spokenText.trim()) {
+      onSendMessage(spokenText);
+      setInputValue("");
+    }
   };
 
   return (
@@ -122,10 +126,10 @@ export default function CopilotDrawer({
                 </div>
                 <div>
                   <h3 className="font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>
-                    Copilot
+                    Family Security Advisor
                   </h3>
                   <p className="text-[10px] uppercase font-mono tracking-widest mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    Gemini Intelligence
+                    Guardian AI
                   </p>
                 </div>
               </div>
@@ -253,7 +257,7 @@ export default function CopilotDrawer({
                     disabled={isDemoMode}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={isDemoMode ? "Chat is disabled in Demo Mode" : "Ask Copilot..."}
+                    placeholder={isDemoMode ? "Chat is disabled in Demo Mode" : "Ask Guardian AI..."}
                     className="w-full border rounded-xl py-3 pl-4 pr-12 text-xs focus:outline-none transition-all shadow-inner"
                     style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--text-primary)', borderColor: 'var(--border-subtle)' }}
                   />

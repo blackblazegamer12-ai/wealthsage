@@ -82,55 +82,38 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
     net_surplus = max(0.0, income - expense)
     surplus = net_surplus if net_surplus > 0 else 1500.0
 
-    # 1. 5-Year Compound Forecast
-    if any(k in query_lower for k in ["forecast", "compound", "5-year", "5 years", "projection", "invest", "save"]):
-        amount_match = re.search(r"₹\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)", user_query) or re.search(r"(\d+(?:,\d{3})*(?:\.\d{1,2})?)", user_query)
-        parsed_amt = float(amount_match.group(1).replace(',', '')) if amount_match else 0
-        surplus = parsed_amt if parsed_amt > 0 else (net_surplus if net_surplus > 0 else 1500.0)
-        rate = 0.08  # 8% target alpha rate
-        months = 60
-        r_m = rate / 12
-        future_val = surplus * (((1 + r_m)**months - 1) / r_m)
+    # 1. Gaming Transaction Scan
+    if any(k in query_lower for k in ["gaming", "scan", "unauthorized", "child", "game", "free fire", "bgmi"]):
+        gaming_txs = [t for t in current_transactions if "gaming" in str(t.get('category')).lower() or "free fire" in str(t.get('description')).lower() or "codashop" in str(t.get('description')).lower()]
+        
+        if not gaming_txs:
+            reply = "I have scanned your ledger and found no unauthorized gaming transactions. Your children's accounts appear secure."
+        else:
+            total_gaming = sum(_safe_float(t.get('amount')) for t in gaming_txs)
+            reply = (
+                f"🚨 **Guardian Alert**: I found **{len(gaming_txs)}** suspicious gaming transactions totaling **₹{total_gaming:,.2f}**.\n\n"
+                f"These appear to be unauthorized in-app purchases. I recommend flagging these transactions and restricting UPI mandates for the child's device immediately."
+            )
+        return {"reply": reply, "has_updates": False, "updates": []}
 
+    # 2. Dark Pattern Mandate Review
+    elif any(k in query_lower for k in ["dark", "pattern", "subscription", "mandate", "drain", "review"]):
         reply = (
-            f"By saving ₹{surplus:,.2f} every month for the next 5 years, your money would grow to **₹{future_val:,.2f}**.\n\n"
-            f"- **Principal Invested:** ₹{surplus * 60:,.2f}\n"
-            f"- **Estimated Growth:** ₹{future_val - (surplus * 60):,.2f}\n\n"
-            f"Investing this amount consistently in a broad-market index fund can significantly accelerate your wealth building. Would you like to adjust the monthly contribution to see how it affects your returns?"
+            f"I have analyzed your active UPI mandates. **Discord Nitro (₹699)** and **Instagram Subscription (₹89)** match known dark-pattern behaviors (hard-to-cancel, auto-renewal traps).\n\n"
+            f"I recommend revoking these mandates from the Subscription Traps dashboard to stop the monthly drain of ₹788."
         )
         return {"reply": reply, "has_updates": False, "updates": []}
 
-    # 2. Deep Cash Leak Audit
-    elif any(k in query_lower for k in ["leak", "audit", "waste", "spending", "outflow", "uncover"]):
-        cat_spend: Dict[str, float] = {}
-        for t in current_transactions:
-            if t.get('type') == 'expense':
-                c = t.get('category', 'General')
-                cat_spend[c] = cat_spend.get(c, 0.0) + _safe_float(t.get('amount'))
-        top_cat = max(cat_spend, key=cat_spend.get) if cat_spend else "Dining & Subscriptions"
-        top_amt = cat_spend.get(top_cat, 340.0)
-
-        reply = (
-            f"Your top spending category is currently **{top_cat}** at **₹{top_amt:,.2f}** per month.\n\n"
-            f"- **Total Monthly Outflow:** ₹{expense:,.2f}\n"
-            f"- **Total Monthly Revenue:** ₹{income:,.2f}\n\n"
-            f"Reviewing unused or dormant subscriptions could yield an estimated monthly savings of around ₹1,820. Would you like me to help identify some alternatives or consolidation options?"
-        )
-        return {"reply": reply, "has_updates": False, "updates": []}
-
-    # 3. Zero-Revenue Runway Evaluation
-    elif any(k in query_lower for k in ["runway", "zero", "survival", "emergency", "burn"]):
-        monthly_burn = expense if expense > 0 else 2400.0
-        est_reserve = max(12000.0, net_surplus * 6.0)
-        runway_m = round(est_reserve / monthly_burn, 1)
-
-        reply = (
-            f"You currently have an estimated **{runway_m}-month** emergency runway.\n\n"
-            f"- **Estimated Cash Reserves:** ₹{est_reserve:,.2f}\n"
-            f"- **Adjusted Monthly Burn:** ₹{monthly_burn:,.2f}\n\n"
-            f"A 6-month safety net is typically optimal to protect against unexpected disruptions. Would you like to explore strategies for building a stronger reserve?"
-        )
-        return {"reply": reply, "has_updates": False, "updates": []}
+    # 3. Simulate Alert
+    elif any(k in query_lower for k in ["simulate", "alert", "trigger", "webhook"]):
+        reply = "I have simulated an incoming Account Aggregator webhook for a suspicious gaming purchase. Checking the Live Radar now..."
+        return {
+            "reply": reply,
+            "has_updates": True,
+            "updates": [{
+                "action": "trigger_mock_webhook"
+            }]
+        }
 
     # 4. Log Expense/Income Intent
     elif any(k in query_lower for k in ["log", "expense", "spend", "bought", "spent", "₹", "rupee"]):
@@ -192,15 +175,12 @@ def _deterministic_offline_chat(user_query: str, current_transactions: List[Dict
 
     # 7. Greeting Intent
     elif query_lower.strip() in ["hi", "hello", "hey", "help", "greetings"]:
-        reply = "Hello! I am WealthSage, your AI financial assistant. I can help you analyze your portfolio, audit your expenses, or project your compounding growth. How can I assist you today?"
+        reply = "Hello! I am Guardian AI, your Family Security Advisor. I monitor your family's accounts for gaming scams, dark-pattern subscriptions, and unauthorized purchases. How can I protect you today?"
         return {"reply": reply, "has_updates": False, "updates": []}
 
     reply = (
-        f"I can help you analyze your finances. Here is a quick overview of your current ledger:\n\n"
-        f"- **Monthly Inflow:** ₹{income:,.2f}\n"
-        f"- **Monthly Outflow:** ₹{expense:,.2f}\n"
-        f"- **Net Savings:** ₹{net_surplus:,.2f}\n\n"
-        f"You can ask me to forecast your 5-year compounding growth, audit your spending, or log a new transaction. How would you like to proceed?"
+        f"I am actively monitoring your family's transactions.\n\n"
+        f"You can ask me to scan for unauthorized gaming purchases, review active UPI mandates for dark patterns, or simulate a Guardian Shield alert. What would you like me to check?"
     )
     return {"reply": reply, "has_updates": False, "updates": []}
 
@@ -223,44 +203,29 @@ def process_financial_chat(
 
     system_prompt = f"""
 ========================================
-SYSTEM PROMPT: WEALTHSAGE ASSISTANT (PROFESSIONAL & ANALYTICAL)
+SYSTEM PROMPT: GUARDIAN AI (FAMILY SECURITY ADVISOR)
 ========================================
-You are WealthSage, a highly intelligent, polite, and objective financial AI assistant, designed to sound exactly like ChatGPT. You provide structured, insightful, and helpful financial guidance.
+You are Guardian AI, a highly intelligent and protective Family Security Advisor. You monitor family bank accounts via Account Aggregator to prevent children from making unauthorized in-game purchases and to stop dark-pattern subscriptions from draining the account.
 
 CURRENT LEDGER:
 {json.dumps(current_transactions)}
 
-1. TONE AND STYLE (THE CHATGPT PERSONA):
-- Be highly intelligent, clear, and professional.
-- Do NOT use exaggerated emojis (like 🚀, 💡, 🎯, or 🔥). If you use emojis at all, keep it to a bare minimum (e.g., maybe one subtle emoji if relevant, or none at all).
-- Avoid gimmicky slang or overly excited phrases (e.g., "Let's go!", "Boom!"). Use objective, analytical, yet helpful language.
-- Structure responses naturally. Use standard markdown like bullet points, bolding for emphasis, and paragraph breaks to make it readable.
-- Do not force rigid "Step 1, Step 2, Step 3" structures unless explicitly asking for step-by-step instructions.
+1. TONE AND STYLE:
+- Be highly protective, clear, and professional.
+- Warn the user about potential risks (gaming scams, auto-renewal traps).
+- Use objective, analytical language but prioritize family security.
 
-2. BANNED LANGUAGE & FORMATTING:
-- NEVER output raw LaTeX formulas or Velocity metrics unless explicitly requested.
-- Do not output raw JSON arrays or database dumps to the user.
-- Keep calculations accurate but explain them in plain text (e.g., "If you invest ₹5000 a month...").
+2. RESPONSE STRUCTURE:
+- Direct, concise answer.
+- Highlight any suspicious transactions or active dark-pattern mandates.
+- Ask if they want you to flag the transaction or revoke a mandate.
 
-3. RESPONSE STRUCTURE:
-- Start with a clear, concise answer to the user's question or a summary of the requested calculation.
-- Provide a clean bulleted breakdown of the key numbers if analyzing a ledger or a forecast.
-- End with a polite, helpful follow-up question (e.g., "Would you like me to adjust the interest rate or time horizon?").
+3. TOOLKIT ACTIONS:
+- "trigger_mock_webhook": Simulates a suspicious gaming purchase alert.
+- "add": For standard transactions.
+- "reset": Wipe ledger.
 
-DIRECTIVES:
-1. Mathematical Autonomy: Accurately calculate totals and percentages.
-2. Holistic Wealth Tracking:
-   - "Net Worth" updates log as massive "income" transactions or capital corrections.
-   - Recurring investments/SIPs log as Monthly Subscriptions.
-3. The Toolkit Mapping: 
-   - "add": For one-time incomes, expenses, or net-worth corrections.
-   - "add_subscription": For recurring monthly costs, SIPs, or automated investments.
-   - "update": To modify an existing entry by its ID.
-   - "delete": To remove a specific entry by its ID.
-   - "reset": To wipe the ENTIRE ledger clean. Use ONLY when the user explicitly asks to reset ALL transactions.
-
-RESPONSE FORMAT:
-Respond strictly in valid JSON format:
+RESPONSE FORMAT (JSON):
 {{
     "reply": "Your conversational response here.",
     "has_updates": false,

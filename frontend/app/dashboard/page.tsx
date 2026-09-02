@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, Suspense, useCallback, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -18,9 +19,15 @@ import {
   Bell,
   FileCheck2,
   ArrowLeft,
-  Calculator
+  Calculator,
+  Mic,
+  Camera
 } from "lucide-react";
 import { useUser, UserButton } from "@clerk/nextjs";
+
+// Server Actions
+import { processVoice } from "../../app/actions/processVoice";
+import { processReceipt } from "../../app/actions/processReceipt";
 
 // Global Store
 import { useWealthStore } from "../../lib/store";
@@ -34,12 +41,15 @@ import ThemeSelectorModal from "../../components/theme/ThemeSelectorModal";
 import CopilotDrawer from "../../components/modals/CopilotDrawer";
 import HighFrictionConfirmModal from "../../components/modals/HighFrictionConfirmModal";
 import NotificationCenter from "../../components/NotificationCenter";
+import CyberDefenseModal from "../../components/modals/CyberDefenseModal";
+import ExpoDemoController from "../../components/ExpoDemoController";
 import SecurityAuditLogModal from "../../components/SecurityAuditLog";
 import ToastContainer from "../../components/Toast";
 import CommandPalette, { CommandAction } from "../../components/CommandPalette";
 import ErrorBoundary from "../../components/ErrorBoundary";
 
 // Modular Tabs
+import GuardianShieldTab from "../../components/tabs/GuardianShieldTab";
 import OverviewTelemetryTab from "../../components/tabs/OverviewTelemetryTab";
 import CommitmentsTab from "../../components/tabs/CommitmentsTab";
 import CitizenEntitlementsTab from "../../components/tabs/CitizenEntitlementsTab";
@@ -51,9 +61,15 @@ import { useRoyalTheme } from "../../components/theme/ThemeContext";
 import { BriefingData } from "../../components/ExecutiveBriefing";
 import { sanitizeAmount } from "../../lib/sanitize";
 
-type ActiveTabType = "overview" | "commitments" | "citizen" | "compounding" | "settings";
+type ActiveTabType = "guardian" | "capital" | "civic" | "settings";
 
 function DashboardContent() {
+  const activeTab = useWealthStore(state => state.activeTab);
+  const setActiveTab = useWealthStore(state => state.setActiveTab);
+  const setModal = useWealthStore(state => state.setModal);
+  const addToast = useWealthStore(state => state.addToast);
+  const toasts = useWealthStore(state => state.toasts);
+  const removeToast = useWealthStore(state => state.removeToast);
   const { user: clerkUser } = useUser();
   const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
@@ -68,14 +84,14 @@ function DashboardContent() {
   // Sync Clerk user ID into the store
   useEffect(() => {
     const id = clerkUser?.id || "demo-user-id";
-    const name = clerkUser?.fullName || clerkUser?.firstName || "Sovereign Executive";
+    const name = clerkUser?.fullName || clerkUser?.firstName || "Family Administrator";
     store.setCurrentUser(id, name);
   }, [clerkUser]);
 
   // Sync URL tab param
   useEffect(() => {
     const tabParam = searchParams.get("tab") as ActiveTabType | null;
-    if (tabParam && ["overview", "commitments", "citizen", "compounding", "settings"].includes(tabParam)) {
+    if (tabParam && ["guardian", "capital", "civic", "settings"].includes(tabParam)) {
       store.setActiveTab(tabParam);
     }
   }, [searchParams]);
@@ -183,35 +199,107 @@ function DashboardContent() {
     store.setModal("isModalOpen", false);
   }, [store.formData]);
 
+  // ─── Voice & OCR Handlers ──────────────────────────────────
+  const handleDictation = useCallback(() => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      store.addToast("Error", "Speech recognition not supported in this browser.", "warning");
+      return;
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-IN";
+    
+    recognition.onstart = () => {
+      store.addToast("Dictation", "Listening... Speak now.", "info");
+    };
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      store.addToast("Processing", `Analyzing: "${transcript}"`, "info");
+      try {
+        const { amount, merchant, category, actor } = await processVoice(transcript);
+        if (amount > 0) {
+          store.addToast("Success", `Detected ₹${amount} at ${merchant}`, "success");
+          // Add to ledger
+          store.saveTransaction({
+            description: merchant,
+            amount: amount,
+            type: "outflow",
+            category: category,
+          });
+        }
+      } catch (err) {
+        store.addToast("Error", "Failed to parse dictation.", "warning");
+      }
+    };
+    recognition.start();
+  }, [store]);
+
+  const handleReceiptUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    store.addToast("Processing", "Scanning receipt using Sovereign Vision OCR...", "info");
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        const result = await processReceipt(base64);
+        store.addToast("Success", `Receipt Parsed: ${result.merchant} ₹${result.amount}`, "success");
+        store.saveTransaction({
+          description: result.merchant,
+          amount: result.amount,
+          type: "outflow",
+          category: result.category,
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      store.addToast("Error", "Failed to parse receipt.", "warning");
+    }
+  }, [store]);
+
+  const handleConnectAA = async () => {
+    store.addToast("Connecting", "Initializing RBI Account Aggregator session...", "info");
+    try {
+      const res = await fetch("/api/aa/create-consent", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || "Failed to initiate AA session");
+      }
+    } catch (err: any) {
+      store.addToast("Error", err.message || "Failed to connect", "warning");
+    }
+  };
+
   // ─── Command Palette Actions ───────────────────────────────
   const commandActions: CommandAction[] = useMemo(
     () => [
       { id: "cmd-add-tx", label: "Add Record", description: "Log an income or expenditure", group: "Actions", icon: Plus, onSelect: () => store.setModal("isModalOpen", true) },
       { id: "cmd-audit", label: "Run Financial Audit", description: "Analyze burn velocity and leak vectors", group: "Actions", icon: ShieldAlert, onSelect: () => store.runAuditAnalysis() },
-      { id: "cmd-glass-ai", label: "Open Glass AI Copilot", description: "Natural language financial reasoning", group: "AI", icon: Sparkles, onSelect: () => store.setModal("isGlassAIOpen", true) },
+      { id: "cmd-glass-ai", label: "Open Guardian AI", description: "Family security monitoring and reasoning", group: "AI", icon: Sparkles, onSelect: () => store.setModal("isGlassAIOpen", true) },
       { id: "cmd-theme", label: "Change Theme", description: "Switch to Echoid or other royal themes", group: "Actions", icon: Palette, onSelect: () => store.setModal("isThemeModalOpen", true) },
-      { id: "cmd-tab-overview", label: "Go to Overview & Telemetry", description: "Main telemetry and transaction ledger", group: "Navigation", icon: LayoutDashboard, onSelect: () => store.setActiveTab("overview") },
-      { id: "cmd-tab-commitments", label: "Go to Subscriptions & Commitments", description: "Manage recurring charges and leaks", group: "Navigation", icon: Target, onSelect: () => store.setActiveTab("commitments") },
-      { id: "cmd-tab-citizen", label: "Go to Citizen Entitlements", description: "Sovereign Welfare Radar & Predatory Shield", group: "Navigation", icon: ShieldAlert, onSelect: () => store.setActiveTab("citizen") },
-      { id: "cmd-tab-compounding", label: "Go to Compounding & Quant", description: "Forward-looking wealth trajectory & Tax Engine", group: "Navigation", icon: Zap, onSelect: () => store.setActiveTab("compounding") },
+      { id: "cmd-tab-guardian", label: "Go to Guardian Shield", description: "Live Radar, Subscription Traps & UPI Circle", group: "Navigation", icon: ShieldAlert, onSelect: () => store.setActiveTab("guardian") },
+      { id: "cmd-tab-capital", label: "Go to Capital Wealth", description: "Overview, Commitments & Quant Tools", group: "Navigation", icon: LayoutDashboard, onSelect: () => store.setActiveTab("capital") },
+      { id: "cmd-tab-civic", label: "Go to Civic Entitlements", description: "Sovereign Welfare Radar", group: "Navigation", icon: Target, onSelect: () => store.setActiveTab("civic") },
     ],
     [store.transactions]
   );
 
   // ─── Tab Navigation Config ─────────────────────────────────
   const TABS = [
-    { id: "overview", label: "Overview & Telemetry", icon: LayoutDashboard },
-    { id: "commitments", label: "Subscriptions & Commitments", icon: Target },
-    { id: "citizen", label: "Citizen Entitlements", icon: ShieldAlert },
-    { id: "compounding", label: "Compounding & Quant", icon: Zap },
+    { id: "guardian", label: "Guardian Shield", icon: ShieldAlert },
+    { id: "capital", label: "Capital Wealth", icon: LayoutDashboard },
+    { id: "civic", label: "Civic Entitlements", icon: Target },
     { id: "settings", label: "Vault Settings", icon: Settings },
   ];
 
   if (!isMounted) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-[var(--text-dim)] font-mono text-xs">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-black font-extrabold text-sm shadow-md shadow-amber-500/20 mb-4 animate-pulse">
-          ⚡
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 animate-pulse">
+          <WealthSageLogo className="w-10 h-10" />
         </div>
         Initializing Sovereign Vault...
       </div>
@@ -224,7 +312,7 @@ function DashboardContent() {
       <ToastContainer toasts={store.toasts} onDismiss={store.removeToast} />
 
       {/* Top Workspace Header Bar */}
-      <header className="sticky top-0 z-40 w-full glass-nav">
+      <header className="sticky top-0 z-50 w-full bg-black/95 backdrop-blur-md border-b border-zinc-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
@@ -256,11 +344,26 @@ function DashboardContent() {
               <kbd className="text-[10px] font-mono px-1 rounded-sm bg-white/10 text-[var(--text-dim)]">⌘K</kbd>
             </button>
 
+            {/* Hardware APIs: Mic & Camera */}
+            <button onClick={handleDictation} className="p-2 rounded-[12px] transition-all bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white hover:bg-white/10" title="Voice Dictation">
+              <Mic size={16} />
+            </button>
+            <label className="cursor-pointer p-2 rounded-[12px] transition-all bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white hover:bg-white/10" title="Upload Receipt">
+              <Camera size={16} />
+              <input type="file" accept="image/*" className="hidden" onChange={handleReceiptUpload} />
+            </label>
+
             <button type="button" onClick={() => store.setModal("isNotifCenterOpen", true)} className="p-2 rounded-[12px] relative transition-all cursor-pointer bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white" title="Notification Center" aria-label="Open notifications">
               <Bell size={16} />
               {store.notifications.some((n) => !n.read) && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: 'var(--accent-primary)' }} />
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center shadow-lg text-white" style={{ backgroundColor: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }}>
+                  {store.notifications.filter(n => !n.read).length}
+                </span>
               )}
+            </button>
+
+            <button type="button" onClick={handleConnectAA} className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] text-xs font-bold transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20" title="Connect Bank via Account Aggregator">
+              <ShieldAlert size={14} /> <span className="hidden sm:inline">Connect Bank (AA)</span>
             </button>
 
             <button type="button" onClick={() => store.setModal("isAuditLogModalOpen", true)} className="p-2 rounded-[12px] transition-all cursor-pointer bg-white/[0.05] text-[var(--text-dim)] border border-white/10 hover:text-white" title="Security Audit Trail" aria-label="Open security audit log">
@@ -285,7 +388,7 @@ function DashboardContent() {
       </header>
 
       {/* Main App Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-6 flex flex-col">
         {/* Tab Navigation with Scroll Snap */}
         <nav className="flex items-center gap-1.5 overflow-x-auto pb-4 mb-6 scrollbar-none border-b border-[var(--line)] tab-scroll-snap" role="tablist" aria-label="Dashboard sections">
           {TABS.map((tab) => {
@@ -308,93 +411,101 @@ function DashboardContent() {
         </nav>
 
         {/* Tab Content Router */}
-        <main className="flex-1" role="tabpanel" id={`tabpanel-${store.activeTab}`}>
-          {store.activeTab === "overview" && (
-            <OverviewTelemetryTab
-              userName={store.userDisplayName}
-              currentBalance={currentBalance}
-              totalIncome={totalIncome}
-              totalExpense={totalExpense}
-              incomeChangePct={incomeChangePct}
-              expenseChangePct={expenseChangePct}
-              balanceChangePct={balanceChangePct}
-              transactions={activeTransactions}
-              currentUserId={store.currentUserId}
-              onLoadDemoData={store.enterDemoMode}
-              isDemoMode={store.isDemoMode}
-              onExitDemoMode={store.exitDemoMode}
-              onOpenAddModal={() => store.setModal("isModalOpen", true)}
-              onOpenAuditModal={store.runAuditAnalysis}
-              onOpenGlassAI={() => store.setModal("isGlassAIOpen", true)}
-              onBankConnected={() => {
-                store.fetchAllData();
-                store.addToast("Bank Connected", "Incremental transaction sync loop completed.", "success");
-              }}
-              briefingData={store.briefingData}
-              isBriefingLoading={store.isBriefingLoading}
-              onRefreshBriefing={() => store.fetchExecutiveBriefing()}
-              onExecuteAction={(a: any) => store.dispatchChatMessage(a)}
-              monthlyIncome={totalIncome}
-              monthlyExpense={totalExpense}
-              wealthData={wealthData}
-              expensesByCategory={expensesByCategory}
-              transactionCount={activeTransactions.length}
-              goalCount={activeGoals.length}
-              subscriptionCount={activeSubscriptions.length}
-            />
-          )}
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={store.activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1"
+            role="tabpanel"
+            id={`tabpanel-${store.activeTab}`}
+          >
+            {store.activeTab === "guardian" && (
+              <GuardianShieldTab />
+            )}
 
-          {store.activeTab === "commitments" && (
-            <CommitmentsTab
-              goals={activeGoals}
-              subscriptions={activeSubscriptions}
-              onOpenGoalModal={(g: any) => {
-                store.setEditingGoal(g || null);
-                store.setGoalForm(g || { name: "", target: "", current: "", icon: "🎯", color: "#06B6D4" });
-                store.setModal("isGoalModalOpen", true);
-              }}
-              onDeleteGoal={store.deleteGoal}
-              onOpenSubModal={(s: any) => {
-                store.setEditingSub(s || null);
-                store.setSubForm(s || { name: "", amount: "", cycle: "Monthly", nextDate: "", icon: "💸", color: "#10B981" });
-                store.setModal("isSubModalOpen", true);
-              }}
-              onDeleteSub={store.deleteSub}
-              onLoadDemoData={store.enterDemoMode}
-              isDemoMode={store.isDemoMode}
-              onExitDemoMode={store.exitDemoMode}
-            />
-          )}
+            {store.activeTab === "capital" && (
+              <div className="space-y-12">
+                <OverviewTelemetryTab
+                  userName={store.userDisplayName}
+                  currentBalance={currentBalance}
+                  totalIncome={totalIncome}
+                  totalExpense={totalExpense}
+                  incomeChangePct={incomeChangePct}
+                  expenseChangePct={expenseChangePct}
+                  balanceChangePct={balanceChangePct}
+                  transactions={activeTransactions}
+                  currentUserId={store.currentUserId}
+                  onLoadDemoData={store.enterDemoMode}
+                  isDemoMode={store.isDemoMode}
+                  onExitDemoMode={store.exitDemoMode}
+                  onOpenAddModal={() => store.setModal("isModalOpen", true)}
+                  onOpenAuditModal={store.runAuditAnalysis}
+                  onOpenGlassAI={() => store.setModal("isGlassAIOpen", true)}
+                  onBankConnected={() => {}}
+                  briefingData={store.briefingData}
+                  isBriefingLoading={store.isBriefingLoading}
+                  onRefreshBriefing={() => store.fetchExecutiveBriefing()}
+                  onExecuteAction={(a: any) => store.dispatchChatMessage(a)}
+                  monthlyIncome={totalIncome}
+                  monthlyExpense={totalExpense}
+                  wealthData={wealthData}
+                  expensesByCategory={expensesByCategory}
+                  transactionCount={activeTransactions.length}
+                  goalCount={activeGoals.length}
+                  subscriptionCount={activeSubscriptions.length}
+                />
+                <CommitmentsTab
+                  goals={activeGoals}
+                  subscriptions={activeSubscriptions}
+                  onOpenGoalModal={(g: any) => {
+                    store.setEditingGoal(g || null);
+                    store.setGoalForm(g || { name: "", target: "", current: "", icon: "🎯", color: "#06B6D4" });
+                    store.setModal("isGoalModalOpen", true);
+                  }}
+                  onDeleteGoal={store.deleteGoal}
+                  onOpenSubModal={(s: any) => {
+                    store.setEditingSub(s || null);
+                    store.setSubForm(s || { name: "", amount: "", cycle: "Monthly", nextDate: "", icon: "💸", color: "#10B981" });
+                    store.setModal("isSubModalOpen", true);
+                  }}
+                  onDeleteSub={store.deleteSub}
+                  onLoadDemoData={store.enterDemoMode}
+                  isDemoMode={store.isDemoMode}
+                  onExitDemoMode={store.exitDemoMode}
+                />
+                <CompoundingQuantTab
+                  notes={store.notes}
+                  activeNote={store.activeNote}
+                  setActiveNote={store.setActiveNote}
+                  noteTitle={store.noteTitle}
+                  setNoteTitle={store.setNoteTitle}
+                  noteContent={store.noteContent}
+                  setNoteContent={store.setNoteContent}
+                  onCreateNewNote={store.createNewNote}
+                  onSaveNote={store.saveNote}
+                  onAskTutor={store.askTutor}
+                  isTutorThinking={store.isTutorThinking}
+                />
+              </div>
+            )}
 
-          {store.activeTab === "citizen" && <CitizenEntitlementsTab />}
+            {store.activeTab === "civic" && <CitizenEntitlementsTab />}
 
-          {store.activeTab === "compounding" && (
-            <CompoundingQuantTab
-              notes={store.notes}
-              activeNote={store.activeNote}
-              setActiveNote={store.setActiveNote}
-              noteTitle={store.noteTitle}
-              setNoteTitle={store.setNoteTitle}
-              noteContent={store.noteContent}
-              setNoteContent={store.setNoteContent}
-              onCreateNewNote={store.createNewNote}
-              onSaveNote={store.saveNote}
-              onAskTutor={store.askTutor}
-              isTutorThinking={store.isTutorThinking}
-            />
-          )}
-
-          {store.activeTab === "settings" && (
-            <SettingsTab
-              user={clerkUser}
-              transactions={activeTransactions}
-              goals={activeGoals}
-              subscriptions={activeSubscriptions}
-              onOpenThemeModal={() => store.setModal("isThemeModalOpen", true)}
-              onClearLedger={() => store.setModal("isResetConfirmModalOpen", true)}
-            />
-          )}
-        </main>
+            {store.activeTab === "settings" && (
+              <SettingsTab
+                user={clerkUser}
+                transactions={activeTransactions}
+                goals={activeGoals}
+                subscriptions={activeSubscriptions}
+                onOpenThemeModal={() => store.setModal("isThemeModalOpen", true)}
+                onClearLedger={() => store.setModal("isResetConfirmModalOpen", true)}
+              />
+            )}
+          </motion.main>
+        </AnimatePresence>
       </div>
 
       {/* Global Modals & Drawers */}
@@ -458,12 +569,9 @@ function DashboardContent() {
         actions={commandActions}
       />
 
-      <NotificationCenter
-        isOpen={store.isNotifCenterOpen}
-        onClose={() => store.setModal("isNotifCenterOpen", false)}
-        notifications={store.notifications}
-        onMarkAllRead={store.markAllNotificationsRead}
-      />
+      <NotificationCenter />
+      <CyberDefenseModal />
+      <ExpoDemoController />
 
       <SecurityAuditLogModal
         isOpen={store.isAuditLogModalOpen}

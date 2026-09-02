@@ -2,21 +2,18 @@
  * WealthSage Centralized Zustand Store
  * Eliminates prop-drilling across the 5-tab dashboard architecture.
  */
-
 import { create } from 'zustand';
 import { createClient } from '@supabase/supabase-js';
 import { isValidSupabaseConfig, sanitizeAmount, sanitizeTextInput } from './sanitize';
 import { api } from './api';
 import { DEMO_PRESETS } from './demoData';
 import type { SecurityAuditLog, NotificationItem } from '../types';
+import { supabase } from './supabase';
 
-// --- Supabase Config ---
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const SUPABASE_CONFIGURED = isValidSupabaseConfig(SUPABASE_URL, SUPABASE_ANON_KEY);
-const SAFE_SUPABASE_URL = SUPABASE_CONFIGURED ? SUPABASE_URL : 'https://localhost.invalid';
-const SAFE_SUPABASE_ANON_KEY = SUPABASE_CONFIGURED ? SUPABASE_ANON_KEY : 'demo-mode-disabled';
-const supabase = createClient(SAFE_SUPABASE_URL, SAFE_SUPABASE_ANON_KEY);
+const SUPABASE_CONFIGURED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.startsWith('your_'));
+
 
 export interface ToastPayload {
   id: string;
@@ -25,7 +22,26 @@ export interface ToastPayload {
   type: 'success' | 'ai' | 'warning' | 'info';
 }
 
-type ActiveTabType = 'overview' | 'commitments' | 'citizen' | 'compounding' | 'settings';
+type ActiveTabType = 'guardian' | 'capital' | 'civic' | 'settings';
+
+export interface PaymentRequest {
+  id: string;
+  merchant: string;
+  amount: number;
+  childLabel: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+}
+
+export interface UPIMandate {
+  id: string;
+  merchant: string;
+  amount: number;
+  frequency: string;
+  last_charged: string;
+  status: 'active' | 'paused' | 'revoked';
+  isDarkPattern?: boolean;
+}
 
 interface WealthState {
   // --- Core Entities ---
@@ -70,6 +86,8 @@ interface WealthState {
   isNotifCenterOpen: boolean;
   isAuditLogModalOpen: boolean;
   isResetConfirmModalOpen: boolean;
+  isCyberDefenseOpen: boolean;
+  cyberDefenseData: any;
 
   // --- Form State ---
   editingGoal: any;
@@ -77,6 +95,11 @@ interface WealthState {
   editingSub: any;
   subForm: any;
   formData: { description: string; amount: string; type: string; category: string };
+
+  // --- Guardian Shield ---
+  paymentRequests: PaymentRequest[];
+  upiMandates: UPIMandate[];
+  isAAModalOpen: boolean;
 
   // --- Toast ---
   toasts: ToastPayload[];
@@ -88,6 +111,7 @@ interface WealthActions {
   setCurrentUser: (id: string, name: string) => void;
   toggleLedgerMode: () => void;
   setModal: (modal: string, open: boolean) => void;
+  openCyberDefense: (txData: any) => void;
   setInputValue: (value: string) => void;
   setFormData: (data: Partial<WealthState['formData']>) => void;
   setNoteTitle: (title: string) => void;
@@ -136,10 +160,23 @@ interface WealthActions {
   getActiveTransactions: () => any[];
   getActiveGoals: () => any[];
   getActiveSubscriptions: () => any[];
+
+  // --- Guardian Shield Actions ---
+  approveTransaction: (id: string) => void;
+  flagTransaction: (id: string) => void;
+  revokeMandate: (id: string) => void;
+  approvePaymentRequest: (id: string) => void;
+  rejectPaymentRequest: (id: string) => void;
+  triggerMockWebhook: () => void;
+  seedGuardianDemoData: () => void;
 }
 
-export const useWealthStore = create<WealthState & WealthActions>((set, get) => ({
-  // --- Initial State ---
+import { persist } from 'zustand/middleware';
+
+export const useWealthStore = create<WealthState & WealthActions>()(
+  persist(
+    (set, get) => ({
+      // --- Initial State ---
   transactions: [],
   goals: [],
   subscriptions: [],
@@ -149,7 +186,7 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
   noteContent: '',
   isTutorThinking: false,
 
-  activeTab: 'overview',
+  activeTab: 'guardian',
   isLoading: true,
   isDemoMode: false,
   currentUserId: 'demo-user-id',
@@ -159,7 +196,7 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
   insights: [
     {
       id: '1',
-      message: 'Welcome to WealthSage Sovereign Edition. I am your autonomous AI financial architect. Ask quant questions, analyze leaks, or simulate compound wealth.',
+      message: 'Welcome to WealthSage Guardian Shield. I am your Family Security Advisor. I monitor your family\'s transactions for gaming scams, dark-pattern subscriptions, and unauthorized purchases. Ask me to scan for threats, review child spending, or flag suspicious activity.',
       type: 'advice',
     },
   ],
@@ -192,6 +229,8 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
   isNotifCenterOpen: false,
   isAuditLogModalOpen: false,
   isResetConfirmModalOpen: false,
+  isCyberDefenseOpen: false,
+  cyberDefenseData: null,
 
   editingGoal: null,
   goalForm: { title: '', target_amount: '', current_amount: '', target_date: '' },
@@ -200,6 +239,22 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
   formData: { description: '', amount: '', type: 'outflow', category: 'Housing' },
 
   toasts: [],
+
+  // --- Guardian Shield ---
+  paymentRequests: [
+    { id: 'pr-1', merchant: 'Google Play - Free Fire', amount: 1200, childLabel: "Ravi's Phone", status: 'pending' as const, created_at: new Date().toISOString() },
+    { id: 'pr-2', merchant: 'Codashop - BGMI UC', amount: 799, childLabel: "Ravi's Phone", status: 'pending' as const, created_at: new Date().toISOString() },
+    { id: 'pr-3', merchant: 'Swiggy - Late Night Order', amount: 450, childLabel: "Ravi's Phone", status: 'pending' as const, created_at: new Date().toISOString() },
+    { id: 'pr-4', merchant: 'Discord Nitro Renewal', amount: 699, childLabel: "Priya's iPad", status: 'pending' as const, created_at: new Date().toISOString() },
+  ],
+  upiMandates: [
+    { id: 'um-1', merchant: 'YouTube Premium Family', amount: 189, frequency: 'Monthly', last_charged: '2026-08-15', status: 'active' as const },
+    { id: 'um-2', merchant: 'Discord Nitro', amount: 699, frequency: 'Monthly', last_charged: '2026-08-20', status: 'active' as const, isDarkPattern: true },
+    { id: 'um-3', merchant: 'Instagram Subscription', amount: 89, frequency: 'Monthly', last_charged: '2026-08-25', status: 'active' as const, isDarkPattern: true },
+    { id: 'um-4', merchant: 'Netflix Mobile', amount: 149, frequency: 'Monthly', last_charged: '2026-08-10', status: 'active' as const },
+    { id: 'um-5', merchant: 'Spotify Premium', amount: 119, frequency: 'Monthly', last_charged: '2026-08-05', status: 'active' as const },
+  ],
+  isAAModalOpen: false,
 
   // --- Setters ---
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -210,6 +265,7 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
     return { ledgerMode: newMode };
   }),
   setModal: (modal, open) => set({ [modal]: open } as any),
+  openCyberDefense: (txData: any) => set({ isCyberDefenseOpen: true, cyberDefenseData: txData }),
   setInputValue: (value) => set({ inputValue: value }),
   setFormData: (data) => set((s) => ({ formData: { ...s.formData, ...data } })),
   setNoteTitle: (title) => set({ noteTitle: title }),
@@ -220,6 +276,60 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
   setEditingSub: (sub) => set({ editingSub: sub }),
   setSubForm: (form) => set({ subForm: form }),
   setInsights: (fn) => set((s) => ({ insights: fn(s.insights) })),
+
+  // --- Guardian Shield Actions ---
+  approveTransaction: (id) => {
+    set((s) => ({ transactions: s.transactions.map((t) => t.id === id ? { ...t, status: 'approved' } : t) }));
+    get().addToast('Transaction Approved', 'Payment has been authorized.', 'success');
+  },
+  flagTransaction: (id) => {
+    set((s) => ({ transactions: s.transactions.map((t) => t.id === id ? { ...t, status: 'flagged' } : t) }));
+    get().addToast('🚨 Transaction Flagged', 'Payment has been blocked and flagged for review.', 'warning');
+  },
+  revokeMandate: (id) => {
+    set((s) => ({ upiMandates: s.upiMandates.map((m) => m.id === id ? { ...m, status: 'revoked' as const } : m) }));
+    get().addToast('Mandate Revoked', 'Recurring payment authorization cancelled.', 'warning');
+  },
+  approvePaymentRequest: (id) => {
+    const { paymentRequests, addToast, saveTransaction } = get();
+    const req = paymentRequests.find((r) => r.id === id);
+    if (req) {
+      set((s) => ({ paymentRequests: s.paymentRequests.map((r) => r.id === id ? { ...r, status: 'approved' as const } : r) }));
+      saveTransaction({ description: req.merchant, amount: req.amount, type: 'outflow', category: 'General' });
+      addToast('Payment Approved', `₹${req.amount} to ${req.merchant} authorized.`, 'success');
+    }
+  },
+  rejectPaymentRequest: (id) => {
+    set((s) => ({ paymentRequests: s.paymentRequests.map((r) => r.id === id ? { ...r, status: 'rejected' as const } : r) }));
+    get().addToast('Payment Rejected', "Child's payment request denied.", 'warning');
+  },
+  triggerMockWebhook: () => {
+    const mockTx = {
+      id: `mock-${crypto.randomUUID()}`, description: 'Google Play - Free Fire Diamonds', amount: 1200,
+      type: 'outflow', category: 'Gaming', date: new Date().toISOString(), created_at: new Date().toISOString(),
+      user_id: get().currentUserId, merchant: 'Google Play', status: 'flagged', actor: 'child',
+    };
+    set((s) => ({ transactions: [mockTx, ...s.transactions] }));
+    get().addToast('🚨 Guardian Alert: Gaming Purchase Detected', '₹1,200 purchase attempted on Google Play by Child. Transaction flagged.', 'warning');
+  },
+  seedGuardianDemoData: () => {
+    set({
+      paymentRequests: [
+        { id: 'pr-1', merchant: 'Google Play - Free Fire', amount: 1200, childLabel: "Ravi's Phone", status: 'pending' as const, created_at: new Date().toISOString() },
+        { id: 'pr-2', merchant: 'Codashop - BGMI UC', amount: 799, childLabel: "Ravi's Phone", status: 'pending' as const, created_at: new Date().toISOString() },
+        { id: 'pr-3', merchant: 'Swiggy Order', amount: 450, childLabel: "Ravi's Phone", status: 'pending' as const, created_at: new Date().toISOString() },
+        { id: 'pr-4', merchant: 'Discord Nitro', amount: 699, childLabel: "Priya's iPad", status: 'pending' as const, created_at: new Date().toISOString() },
+      ],
+      upiMandates: [
+        { id: 'um-1', merchant: 'YouTube Premium Family', amount: 189, frequency: 'Monthly', last_charged: '2026-08-15', status: 'active' as const },
+        { id: 'um-2', merchant: 'Discord Nitro', amount: 699, frequency: 'Monthly', last_charged: '2026-08-20', status: 'active' as const, isDarkPattern: true },
+        { id: 'um-3', merchant: 'Instagram Subscription', amount: 89, frequency: 'Monthly', last_charged: '2026-08-25', status: 'active' as const, isDarkPattern: true },
+        { id: 'um-4', merchant: 'Netflix Mobile', amount: 149, frequency: 'Monthly', last_charged: '2026-08-10', status: 'active' as const },
+        { id: 'um-5', merchant: 'Spotify Premium', amount: 119, frequency: 'Monthly', last_charged: '2026-08-05', status: 'active' as const },
+      ],
+    });
+    get().addToast('Guardian Demo Data Loaded', 'Sample payment requests and UPI mandates loaded.', 'ai');
+  },
 
   // --- Toast ---
   addToast: (title, description, type = 'success') => {
@@ -395,6 +505,9 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
       date: payload.date || new Date().toISOString(),
       created_at: new Date().toISOString(),
       user_id: currentUserId,
+      merchant: sanitizeTextInput(payload.description),
+      status: 'approved',
+      actor: 'parent',
     };
     try {
       if (SUPABASE_CONFIGURED) {
@@ -409,8 +522,10 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
       fetchExecutiveBriefing(updated, goals, subscriptions);
       return newTx;
     } catch (e: any) {
-      console.error('Supabase Error:', e);
-      addToast('Error', 'Failed to save to Supabase', 'warning');
+      const errorMsg = e?.message || JSON.stringify(e);
+      console.error('Supabase Error:', errorMsg);
+      const isSchemaError = errorMsg.toLowerCase().includes('column');
+      addToast('Error', isSchemaError ? 'Schema mismatch. Run schema.sql migration.' : 'Failed to save to Supabase', 'warning');
       return null;
     }
   },
@@ -632,7 +747,29 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
                 addToast('AI Deleted Subscription', 'Subscription removed.', 'ai');
               }
             } else if (update.action === 'reset') {
-              set({ isResetConfirmModalOpen: true });
+              if (SUPABASE_CONFIGURED) await supabase.from('transactions').delete().eq('user_id', currentUserId);
+              currentTx = [];
+              currentGoals = [];
+              currentSubs = [];
+              addToast('System Reset', 'All ledger data has been securely purged.', 'success');
+            } else if (update.action === 'OPEN_MODAL') {
+              if (update.target === 'cyber_defense') {
+                get().setModal('cyberDefenseData', update.data);
+                get().setModal('isCyberDefenseOpen', true);
+                if (SUPABASE_CONFIGURED) {
+                  await supabase.from('audit_logs').insert({
+                    user_id: currentUserId,
+                    action: 'CYBER_DEFENSE_TRIGGERED',
+                    resource_type: 'MODAL',
+                    resource_id: update.data?.id || 'unknown',
+                    severity: 'CRITICAL',
+                  });
+                }
+              }
+            } else if (update.action === 'NAVIGATE') {
+              if (typeof window !== 'undefined') {
+                window.location.href = update.target;
+              }
             }
           }
 
@@ -737,6 +874,15 @@ export const useWealthStore = create<WealthState & WealthActions>((set, get) => 
         body: JSON.stringify({ user_id: currentUserId, mark_all_read: true }),
       });
     } catch {}
-    addToast('Notifications Updated', 'Marked all as read.', 'info');
   },
-}));
+    }),
+    {
+      name: 'wealthsage-storage',
+      partialize: (state) => ({ 
+        transactions: state.transactions, 
+        goals: state.goals, 
+        subscriptions: state.subscriptions 
+      }),
+    }
+  )
+);

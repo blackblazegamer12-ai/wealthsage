@@ -23,7 +23,7 @@ const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 export default function WhatIfSimulator() {
-  const [dailyCost, setDailyCost] = useState<number>(0);
+  const [dailyCost, setDailyCost] = useState<number>(150);
   const [annualReturn, setAnnualReturn] = useState<number>(8);
   const [years, setYears] = useState<number>(10);
 
@@ -87,9 +87,9 @@ export default function WhatIfSimulator() {
 
         {/* Quick Presets */}
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase">
-          <span className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-[var(--text-dim)]">Defensive (4.5%)</span>
-          <span className="px-3 py-1.5 rounded-full bg-cyan-500 text-black font-bold shadow-[0_0_10px_rgba(6,182,212,0.4)]">S&P 500 (8.5%)</span>
-          <span className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-[var(--text-dim)]">Alpha (12%)</span>
+          <span className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-[var(--text-dim)]">PPF / Debt (7.1%)</span>
+          <span className="px-3 py-1.5 rounded-full bg-cyan-500 text-black font-bold shadow-[0_0_10px_rgba(6,182,212,0.4)]">NIFTY 50 (12.0%)</span>
+          <span className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-[var(--text-dim)]">Alpha (15%)</span>
         </div>
       </div>
 

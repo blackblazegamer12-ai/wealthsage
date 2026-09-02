@@ -9,8 +9,9 @@
  */
 import React, { memo } from "react";
 import { motion } from "framer-motion";
-import { Target, Plus, CreditCard } from "lucide-react";
+import { Target, Plus, CreditCard, MoreHorizontal, Database } from "lucide-react";
 import ZombieSubKiller from "../ZombieSubKiller";
+import Dropdown from "../Dropdown";
 
 interface CommitmentsTabProps {
   goals: any[];
@@ -257,22 +258,14 @@ export default function CommitmentsTab({
               Set your first financial goal — like building an emergency fund or saving for a down payment.
             </p>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => onOpenGoalModal()}
-                className="px-5 py-2.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
-                style={{ backgroundColor: 'var(--accent)' }}
-              >
-                + Set Your First Goal
-              </button>
-              <button
-                type="button"
-                onClick={onLoadDemoData}
-                className="px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm hover:scale-[1.02]"
-                style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
-              >
-                Demo Data
-              </button>
+              <Dropdown
+                label="Goal Actions"
+                icon={<MoreHorizontal size={14} />}
+                items={[
+                  { id: 'add', label: 'Set Your First Goal', icon: <Plus size={14}/>, onClick: () => onOpenGoalModal() },
+                  { id: 'demo', label: 'Load Demo Data', icon: <Database size={14}/>, onClick: onLoadDemoData }
+                ]}
+              />
             </div>
           </div>
         ) : (
@@ -312,22 +305,14 @@ export default function CommitmentsTab({
               Add your monthly bills, subscriptions, or software costs to monitor your burn rate.
             </p>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => onOpenSubModal()}
-                className="px-5 py-2.5 rounded-xl font-bold text-xs text-black transition-all shadow-lg hover:scale-[1.02]"
-                style={{ backgroundColor: 'var(--accent)' }}
-              >
-                + Add Expense
-              </button>
-              <button
-                type="button"
-                onClick={onLoadDemoData}
-                className="px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm hover:scale-[1.02]"
-                style={{ backgroundColor: 'var(--surface-overlay)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
-              >
-                Demo Data
-              </button>
+              <Dropdown
+                label="Expense Actions"
+                icon={<MoreHorizontal size={14} />}
+                items={[
+                  { id: 'add', label: 'Add Expense', icon: <Plus size={14}/>, onClick: () => onOpenSubModal() },
+                  { id: 'demo', label: 'Load Demo Data', icon: <Database size={14}/>, onClick: onLoadDemoData }
+                ]}
+              />
             </div>
           </div>
         ) : (

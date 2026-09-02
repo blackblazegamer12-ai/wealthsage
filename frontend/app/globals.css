@@ -212,8 +212,8 @@ body {
 
 .glass-panel {
   background-color: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border);
   border-radius: var(--glass-radius);
   transition: background-color 0.25s ease, border-color 0.25s ease;
@@ -221,8 +221,8 @@ body {
 
 .glass-nav {
   background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(28px) saturate(140%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
   border-bottom: 1px solid var(--glass-border);
 }
 
@@ -405,5 +405,60 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 }
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out forwards;
+}
+
+/* ==========================================================================
+   GUARDIAN SHIELD — Warning States & Alert Animations
+   ========================================================================== */
+
+@keyframes pulse-alert {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 16px 4px rgba(239, 68, 68, 0.2); }
+}
+@keyframes pulse-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 12px 3px rgba(245, 158, 11, 0.15); }
+}
+
+.pulse-alert {
+  animation: pulse-alert 2s ease-in-out infinite;
+}
+.pulse-amber {
+  animation: pulse-amber 2.5s ease-in-out infinite;
+}
+
+.status-flagged {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+.status-pending {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+.status-approved {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+.status-revoked {
+  background: rgba(107, 114, 128, 0.08);
+  border: 1px solid rgba(107, 114, 128, 0.35);
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.card-danger {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.card-warning {
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.card-success {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
